@@ -11,7 +11,7 @@ Restart=always
 
 EnvironmentFile={{ rest_app_home_dir }}/environment
 WorkingDirectory={{ rest_app_home_dir }}
-ExecStart={{ service_home_dir }}/.sdkman/candidates/java/current/bin/java -Xmx1024m -Dgrails.env=prod -Dlogging.level.root=ERROR -Dserver.port={{ domino_vagrant_rest_api_port_forwards[0].guest }} -Dspring.config.location=classpath:application.yml,optional:file:{{ rest_app_home_dir }}{{ rest_config_file }} -jar {{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}
+ExecStart={{ service_home_dir }}/.sdkman/candidates/java/{{ rest_interface_java_version }}/bin/java -Xmx1024m -Dgrails.env=prod -Dlogging.level.root=ERROR -Dserver.port={{ domino_vagrant_rest_api_port_forwards[0].guest }} -Dspring.config.location=classpath:application.yml,optional:file:{{ rest_app_home_dir }}{{ rest_config_file }} -jar {{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}
 ExecStop=/bin/kill -15 $MAINPID
 
 [Install]
