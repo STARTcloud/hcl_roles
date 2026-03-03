@@ -311,7 +311,7 @@
       [Notes]
       KitType=1
       SharedDataDirectory={{ notes_multiuser_common_dir }}\HCL\Notes\Data\Shared
-      InstallType=6
+      InstallType={{ notes_install_type }}
       InstallMode=1
       FailoverSilent=1
       HidePromptFailoverInc=1
@@ -319,6 +319,11 @@
       Ports=TCPIP
       TCPIP=TCP,0,15,0,,12320,
       NotesProgram={{ notes_install_dir }}\
+      Directory={{ notes_data_directory }}
+      DISABLE_WORKSPACE_ROAMING={{ notes_disable_workspace_roaming }}
+      DISABLE_CLIENTRECORD={{ notes_disable_clientrecord }}
+      EnableNSLUnderCitrix={{ notes_enable_nsl_under_citrix }}
+      EnableUsingAppDataForRoaming={{ notes_enable_using_appdata_for_roaming }}
       EXTMGR_ADDINS={{ marvel_client_dll }}
       MC_NetworkDirectory={{ notes_marvel_client_network_directory }}
       MC_AllowSyncDuringSetup={{ notes_marvel_client_allow_sync_during_setup }}
@@ -327,6 +332,9 @@
       MC_DB_Notresolvable={{ notes_marvel_client_db_notresolvable }}
       MC_DB_Unavailable={{ notes_marvel_client_db_unavailable }}
       MC_SupportIDVault={{ notes_marvel_client_support_idvault }}
+      MC_WorkingDirectory={{ notes_marvel_client_working_directory }}
+      MC_ZapNotes={{ notes_marvel_client_zap_notes }}
+      MC_Msg_Suppress_0d4e={{ notes_marvel_client_msg_suppress_setup_complete }}
 
 -
   name: "Implementing Justins Hacks, which are not proper"

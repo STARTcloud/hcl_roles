@@ -16,6 +16,9 @@ notes_hotfix_version: "SHF20"
 # Installation Type (client_only or admin_designer)
 notes_installation_type: "client_only"
 
+# notes.ini InstallType value (2 = AllClient: Notes+Designer+Admin, 6 = Notes client only)
+notes_install_type: "2"
+
 # Installer File Names
 client_only_notes_installer_exe: "Notes_14.5_Win64_English.exe"
 admin_designer_notes_installer_exe: "Notes_Designer_Admin_14.5_Win64_English.exe"
@@ -50,6 +53,22 @@ notes_multiuser_common_dir: "C:\\ProgramData"
 notes_citrix_mode: true
 notes_include_transform: false
 
+# Notes Data Directory (HCL auto-appends HCL\Notes\Data\ to MULTIUSERBASEDIR)
+notes_data_directory: "{{ notes_multiuser_base_dir }}:\\HCL\\Notes\\Data"
+
+# Disable workspace roaming (IBM APAR LO62488 — prevents conflict with MarvelClient roaming)
+notes_disable_workspace_roaming: "1"
+
+# Disable client record logging on shared/VDI machines (Citrix optimization)
+notes_disable_clientrecord: "1"
+
+# Notes Shared Login on Citrix/VDI (SPR# RKRYBJYNR6, Notes 11.0.1+)
+# Eliminates Notes password prompt on each VDI login using Windows DP-API
+notes_enable_nsl_under_citrix: "1"
+
+# Move NSL encrypted password file to %AppData% for roaming (SPR# RCCYAVPREM)
+notes_enable_using_appdata_for_roaming: "1"
+
 # Download Settings
 installer_url_app_path: "SHI"
 
@@ -63,7 +82,7 @@ notes_exe_path: "{{ notes_install_dir }}\\notes.exe"
 # MST Transform File
 notes_mst_file: "HCL Notes 14.5 x64.mst"
 
-marvel_client_dll_artifact: mc64-14.5.7.11267.dll
+marvel_client_dll_artifact: mc64-14.5.8.11269.dll
 marvel_client_dll: mc64.dll
 
 # Marvel Client Configuration
@@ -75,6 +94,9 @@ notes_marvel_client_db_unavailable: "CN=domino-42.prominic.net/O=PNI!!panagenda\
 notes_marvel_client_support_idvault: "1"
 notes_marvel_client_allow_sync_during_setup: "2"
 notes_marvel_client_allow_sync_during_setup_fixprompt: "1"
+notes_marvel_client_working_directory: "%notes_data%\\mc"
+notes_marvel_client_zap_notes: "1"
+notes_marvel_client_msg_suppress_setup_complete: "1"
 
 notes_14_admin_hack_for_multiuser_single_client: true
 notes_14_admin_hack_for_multiuser_single_client_url_app_path: "SHI/Notes/14-admin-hack"
