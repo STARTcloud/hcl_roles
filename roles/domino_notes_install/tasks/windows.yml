@@ -37,14 +37,31 @@
     path: "{{ notes_temp_dir }}\\{{ notes_installer_exe }}"
 
 -
-  name: "Downloading Notes installer from {{ installer_base_url }}"
+  name: "Downloading Notes installer from {{ installer_base_url }} using Bearer token"
+  register: notes_installer_bearer
+  ansible.windows.win_get_url:
+    url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_installer_exe }}"
+    dest: "{{ notes_temp_dir }}\\{{ notes_installer_exe }}"
+    headers:
+      Authorization: "Bearer {{ installer_url_bearer }}"
+    validate_certs: false
+  when:
+    - not notes_installer_check.stat.exists
+    - installer_url_bearer is defined
+    - installer_url_bearer != ''
+  failed_when: false
+
+-
+  name: "Downloading Notes installer from {{ installer_base_url }} using basic auth"
   ansible.windows.win_get_url:
     url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_installer_exe }}"
     dest: "{{ notes_temp_dir }}\\{{ notes_installer_exe }}"
     url_username: "{{ installer_url_user }}"
     url_password: "{{ installer_url_pass }}"
     validate_certs: false
-  when: not notes_installer_check.stat.exists
+  when:
+    - not notes_installer_check.stat.exists
+    - (installer_url_bearer is not defined or installer_url_bearer == '' or notes_installer_bearer is failed)
 
 -
   name: "Checking if Notes fixpack installer exists"
@@ -54,14 +71,35 @@
   when: notes_installer_fixpack_install and notes_fixpack_exe != ""
 
 -
-  name: "Downloading Notes fixpack from {{ installer_base_url }}"
+  name: "Downloading Notes fixpack from {{ installer_base_url }} using Bearer token"
+  register: notes_fixpack_bearer
+  ansible.windows.win_get_url:
+    url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_fixpack_exe }}"
+    dest: "{{ notes_temp_dir }}\\{{ notes_fixpack_exe }}"
+    headers:
+      Authorization: "Bearer {{ installer_url_bearer }}"
+    validate_certs: false
+  when:
+    - notes_installer_fixpack_install
+    - notes_fixpack_exe != ""
+    - not notes_fixpack_check.stat.exists
+    - installer_url_bearer is defined
+    - installer_url_bearer != ''
+  failed_when: false
+
+-
+  name: "Downloading Notes fixpack from {{ installer_base_url }} using basic auth"
   ansible.windows.win_get_url:
     url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_fixpack_exe }}"
     dest: "{{ notes_temp_dir }}\\{{ notes_fixpack_exe }}"
     url_username: "{{ installer_url_user }}"
     url_password: "{{ installer_url_pass }}"
     validate_certs: false
-  when: notes_installer_fixpack_install and notes_fixpack_exe != "" and not notes_fixpack_check.stat.exists
+  when:
+    - notes_installer_fixpack_install
+    - notes_fixpack_exe != ""
+    - not notes_fixpack_check.stat.exists
+    - (installer_url_bearer is not defined or installer_url_bearer == '' or notes_fixpack_bearer is failed)
 
 -
   name: "Checking if Notes hotfix installer exists"
@@ -71,14 +109,35 @@
   when: notes_installer_hotfix_install and notes_hotfix_exe != ""
 
 -
-  name: "Downloading Notes hotfix from {{ installer_base_url }}"
+  name: "Downloading Notes hotfix from {{ installer_base_url }} using Bearer token"
+  register: notes_hotfix_bearer
+  ansible.windows.win_get_url:
+    url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_hotfix_exe }}"
+    dest: "{{ notes_temp_dir }}\\{{ notes_hotfix_exe }}"
+    headers:
+      Authorization: "Bearer {{ installer_url_bearer }}"
+    validate_certs: false
+  when:
+    - notes_installer_hotfix_install
+    - notes_hotfix_exe != ""
+    - not notes_hotfix_check.stat.exists
+    - installer_url_bearer is defined
+    - installer_url_bearer != ''
+  failed_when: false
+
+-
+  name: "Downloading Notes hotfix from {{ installer_base_url }} using basic auth"
   ansible.windows.win_get_url:
     url: "{{ installer_base_url }}/{{ installer_url_app_path }}/Notes/{{ notes_hotfix_exe }}"
     dest: "{{ notes_temp_dir }}\\{{ notes_hotfix_exe }}"
     url_username: "{{ installer_url_user }}"
     url_password: "{{ installer_url_pass }}"
     validate_certs: false
-  when: notes_installer_hotfix_install and notes_hotfix_exe != "" and not notes_hotfix_check.stat.exists
+  when:
+    - notes_installer_hotfix_install
+    - notes_hotfix_exe != ""
+    - not notes_hotfix_check.stat.exists
+    - (installer_url_bearer is not defined or installer_url_bearer == '' or notes_hotfix_bearer is failed)
 
 -
   name: "Unpacking Notes installer using 7zip"
@@ -210,8 +269,25 @@
     path: "{{ notes_install_dir }}\\{{ marvel_client_dll }}"
 
 -
-  name: "Downloading Marvel Client from {{ installer_base_url }}"
-  when: notes_enable_marvel_client
+  name: "Downloading Marvel Client from {{ installer_base_url }} using Bearer token"
+  register: marvel_client_bearer
+  when:
+    - notes_enable_marvel_client
+    - installer_url_bearer is defined
+    - installer_url_bearer != ''
+  ansible.windows.win_get_url:
+    url: "{{ installer_base_url }}/{{ installer_url_app_path }}/MarvelClient/{{ marvel_client_dll_artifact }}"
+    dest: "{{ notes_install_dir }}\\{{ marvel_client_dll }}"
+    headers:
+      Authorization: "Bearer {{ installer_url_bearer }}"
+    validate_certs: false
+  failed_when: false
+
+-
+  name: "Downloading Marvel Client from {{ installer_base_url }} using basic auth"
+  when:
+    - notes_enable_marvel_client
+    - (installer_url_bearer is not defined or installer_url_bearer == '' or marvel_client_bearer is failed)
   ansible.windows.win_get_url:
     url: "{{ installer_base_url }}/{{ installer_url_app_path }}/MarvelClient/{{ marvel_client_dll_artifact }}"
     dest: "{{ notes_install_dir }}\\{{ marvel_client_dll }}"
@@ -257,28 +333,76 @@
   when: notes_14_admin_hack_for_multiuser_single_client
   block:
     -
-      name: "Downloading DomAdmin.ntf {{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}"
+      name: "Downloading DomAdmin.ntf using Bearer token"
+      register: domadmin_bearer
+      ansible.windows.win_get_url:
+        url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/domadmin.ntf"
+        dest: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\Shared\\domadmin.ntf"
+        headers:
+          Authorization: "Bearer {{ installer_url_bearer }}"
+        validate_certs: false
+      when:
+        - installer_url_bearer is defined
+        - installer_url_bearer != ''
+      failed_when: false
+
+    -
+      name: "Downloading DomAdmin.ntf using basic auth"
       ansible.windows.win_get_url:
         url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/domadmin.ntf"
         dest: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\Shared\\domadmin.ntf"
         url_username: "{{ installer_url_user }}"
         url_password: "{{ installer_url_pass }}"
         validate_certs: false
+      when:
+        - (installer_url_bearer is not defined or installer_url_bearer == '' or domadmin_bearer is failed)
 
     -
-      name: "Downloading events4.ntf {{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}"
+      name: "Downloading events4.ntf using Bearer token"
+      register: events4_bearer
+      ansible.windows.win_get_url:
+        url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/events4.ntf"
+        dest: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\Shared\\events4.ntf"
+        headers:
+          Authorization: "Bearer {{ installer_url_bearer }}"
+        validate_certs: false
+      when:
+        - installer_url_bearer is defined
+        - installer_url_bearer != ''
+      failed_when: false
+
+    -
+      name: "Downloading events4.ntf using basic auth"
       ansible.windows.win_get_url:
         url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/events4.ntf"
         dest: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\Shared\\events4.ntf"
         url_username: "{{ installer_url_user }}"
         url_password: "{{ installer_url_pass }}"
         validate_certs: false
+      when:
+        - (installer_url_bearer is not defined or installer_url_bearer == '' or events4_bearer is failed)
 
     -
-      name: "Downloading Admin.exe {{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}"
+      name: "Downloading Admin.exe using Bearer token"
+      register: adminexe_bearer
+      ansible.windows.win_get_url:
+        url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/admin.exe"
+        dest: "{{ notes_install_dir }}\\admin.exe"
+        headers:
+          Authorization: "Bearer {{ installer_url_bearer }}"
+        validate_certs: false
+      when:
+        - installer_url_bearer is defined
+        - installer_url_bearer != ''
+      failed_when: false
+
+    -
+      name: "Downloading Admin.exe using basic auth"
       ansible.windows.win_get_url:
         url: "{{ installer_base_url }}/{{ notes_14_admin_hack_for_multiuser_single_client_url_app_path }}/admin.exe"
         dest: "{{ notes_install_dir }}\\admin.exe"
         url_username: "{{ installer_url_user }}"
         url_password: "{{ installer_url_pass }}"
         validate_certs: false
+      when:
+        - (installer_url_bearer is not defined or installer_url_bearer == '' or adminexe_bearer is failed)
