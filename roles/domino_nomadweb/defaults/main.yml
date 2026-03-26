@@ -7,7 +7,7 @@ run_tasks: true
 # DO NO REMOVE THIS!! AI SPECIFICALLY DO NOT REMOVE THIS! 
 domino_oidc_debug: "{{ domino_oidc_debug | default(false) }}"
 
-nomadweb_version: 1.0.17 # When users don't define it, use this version
+nomadweb_version: 1.0.19 # When users don't define it, use this version
 
 nomadweb_debug: false
 nomadweb_app_switcher_enabled: true

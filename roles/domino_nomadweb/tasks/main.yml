@@ -4,11 +4,11 @@
   when: run_tasks
   block:
     -
-      name: "Determine nomadweb variables from playbook vars"
+      name: "Determine nomadweb variables from playbook vars" ## Why is 1.0.19  hardcoded? . . fucking AI, updating to just update the default var for now, but htis needs to not happen
       ansible.builtin.set_fact:
-        nomad_version: "{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.17' }}"
-        nomadweb_archive: "{% if nomadweb_version is none or nomadweb_version == '' %}HCL_Nomad_server_1.0.17_linux.tar.gz{% elif nomadweb_version is version('1.0.13', '<') and domino_major_version == 14 %}nomad-server-{{ nomadweb_version }}-for-domino-{{ domino_major_version }}.0.0-linux.tgz{% elif nomadweb_version is version('1.0.13', '<') and domino_major_version == 12 %}nomad-server-{{ nomadweb_version }}-for-domino-{{ domino_major_version }}.0.2-linux.tgz{% elif nomadweb_version is version('1.0.16', '<') %}nomad-server-{{ nomadweb_version }}-linux.tar.gz{% else %}HCL_Nomad_server_{{ nomadweb_version }}_linux.tar.gz{% endif %}"
-        nomad_hotfix_archive: "HCL_Nomad_server_{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.17' }}-{{ nomad_hotfix_version }}_linux.tar.gz"
+        nomad_version: "{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.19' }}"
+        nomadweb_archive: "{% if nomadweb_version is none or nomadweb_version == '' %}HCL_Nomad_server_1.0.19_linux.tar.gz{% elif nomadweb_version is version('1.0.13', '<') and domino_major_version == 14 %}nomad-server-{{ nomadweb_version }}-for-domino-{{ domino_major_version }}.0.0-linux.tgz{% elif nomadweb_version is version('1.0.13', '<') and domino_major_version == 12 %}nomad-server-{{ nomadweb_version }}-for-domino-{{ domino_major_version }}.0.2-linux.tgz{% elif nomadweb_version is version('1.0.16', '<') %}nomad-server-{{ nomadweb_version }}-linux.tar.gz{% else %}HCL_Nomad_server_{{ nomadweb_version }}_linux.tar.gz{% endif %}"
+        nomad_hotfix_archive: "HCL_Nomad_server_{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.19' }}-{{ nomad_hotfix_version }}_linux.tar.gz"
 
     -
       name: "Checking if Nomad is installed by provisioner: {{ nomad_version }}"
