@@ -1,11 +1,11 @@
 ---
 run_tasks: true
 # Version information - default version if not specified
-domino_rest_api_version: 1.1.5
+domino_rest_api_version: 1.1.6
 
 # Default Domino version if not already defined by domino_install role
 domino_major_version: "{{ domino_major_version | default('14') }}"
-domino_minor_version: "{{ domino_minor_version | default('0') }}"
+domino_minor_version: "{{ domino_minor_version | default('5') }}"
 
 # Archive name determined by set_fact in tasks/main.yml
 

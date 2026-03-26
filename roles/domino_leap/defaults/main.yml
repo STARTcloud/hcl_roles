@@ -2,7 +2,7 @@
 run_tasks: true
 # Import domino_oidc_debug from domino_oidc role if not defined
 domino_oidc_debug: "{{ domino_oidc_debug | default(false) }}"
-leap_version: 1.1.6
+leap_version: 1.1.10
 
 # HCL Domino Leap archive naming pattern: hcl.dleap-[version].[build].zip
 # Mapping of versions to their corresponding build numbers
@@ -14,7 +14,7 @@ leap_build_map:
   "1.1.7": "29"
   "1.1.8": "25"
   "1.1.9": "36"
-
+  "1.1.10": "14"
 
 # Archive determined by set_fact in tasks/main.yml
 

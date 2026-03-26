@@ -2,7 +2,7 @@
 run_tasks: true
 traveler_debug: true
 
-traveler_version: 14.0.0
+traveler_version: 14.5.1
 traveler_fixpack_version: FP2
 traveler_fixpack_install: false
 
