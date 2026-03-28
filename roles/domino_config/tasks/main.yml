@@ -425,6 +425,35 @@
         - 'domino cmd "load certmgr -ImportRootFromFile {{ cert_dir }}/ca/ca-certificate.crt" 20'
 
     -
+      name: "Checking if CA is already in Domino JVM cacerts"
+      when: not domino_server_touched.stat.exists and selfsigned_enabled and not letsencrypt_enabled
+      ansible.builtin.command:
+        cmd: >
+          {{ domino_install_dir }}/jvm/bin/keytool
+          -list
+          -alias custom-root-ca
+          -storepass changeit
+          -keystore {{ domino_install_dir }}/jvm/lib/security/cacerts
+      become: true
+      register: jvm_ca_check
+      failed_when: false
+      changed_when: false
+
+    -
+      name: "Importing CA into Domino JVM cacerts"
+      when: not domino_server_touched.stat.exists and selfsigned_enabled and not letsencrypt_enabled and jvm_ca_check.rc != 0
+      ansible.builtin.command:
+        cmd: >
+          {{ domino_install_dir }}/jvm/bin/keytool
+          -importcert
+          -alias custom-root-ca
+          -file {{ cert_dir }}/ca/ca-certificate.crt
+          -storepass changeit
+          -keystore {{ domino_install_dir }}/jvm/lib/security/cacerts
+          -noprompt
+      become: true
+
+    -
       name: "Waiting for 60 seconds to let Domino fully configure"
       when: not domino_server_touched.stat.exists
       ansible.builtin.pause:
