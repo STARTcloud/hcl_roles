@@ -148,7 +148,7 @@ jar {
  */
 task jarCheckNotesUser(type: Jar) {
     String mainClass = 'CheckNotesUser'
-    archiveName = "${mainClass}.jar"
+    archiveFileName = "${mainClass}.jar"
     manifest {
         attributes 'Main-Class': "net.prominic.domino/vagrant/$mainClass",
                 'Class-Path': jarClassPath
@@ -181,7 +181,7 @@ new File(jarIndividualDir).eachFileRecurse(groovy.io.FileType.FILES, {File curFi
             if (!tasks.findByName(curTaskName)) {
                 println "Creating task: '$curTaskName'"
                 tasks.create(name: curTaskName, type: Jar) {
-                    archiveName = "${mainClass}.jar"
+                    archiveFileName = "${mainClass}.jar"
                     manifest {
                         attributes 'Main-Class': "net.prominic.domino/vagrant/$mainClass",
                                 'Class-Path': jarClassPath
