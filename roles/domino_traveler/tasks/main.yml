@@ -18,7 +18,7 @@
         -
           name: "Creating installation directories for Traveler"
           ansible.builtin.file:
-            mode: '0644'
+            mode: '0755'
             path: "{{ item }}"
             state: directory
           with_items:
@@ -124,7 +124,7 @@
             -
               name: "Creating installation directories for Traveler FP"
               ansible.builtin.file:
-                mode: '0644'
+                mode: '0755'
                 path: "{{ item }}"
                 state: directory
               with_items:

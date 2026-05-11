@@ -6,9 +6,11 @@ traveler_version: 14.5.1
 traveler_fixpack_version: FP2
 traveler_fixpack_install: false
 
-traveler_archive: "Traveler_{{ '14.0' if traveler_version == '14.0.0' else traveler_version }}_Linux_ML.tar.gz"
+# HCL stopped gzipping the Linux ML installer starting with Traveler 14.5.1: plain .tar, not .tar.gz
+traveler_archive_extension: "{{ '.tar' if traveler_version is version('14.5.1', '>=') else '.tar.gz' }}"
+traveler_archive: "Traveler_{{ '14.0' if traveler_version == '14.0.0' else traveler_version }}_Linux_ML{{ traveler_archive_extension }}"
 
-traveler_fixpack_archive: "Traveler_{{ traveler_version }}{{ traveler_fixpack_version }}_Linux_ML.tar.gz"
+traveler_fixpack_archive: "Traveler_{{ traveler_version }}{{ traveler_fixpack_version }}_Linux_ML{{ traveler_archive_extension }}"
 
 installer_url_app_path: "SHI/Traveler"
 domino_traveler_port_forwards:
