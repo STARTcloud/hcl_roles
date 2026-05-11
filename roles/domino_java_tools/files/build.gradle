@@ -6,7 +6,16 @@ plugins {
     id 'application'  // allows 'run' task.
     id 'eclipse'      // allows dependencies to be exported to .classpath
 }
-mainClassName = 'CheckNotesUser'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+application {
+    mainClass = 'CheckNotesUser'
+}
 
 String notesInstallation = project.findProperty('notesInstallation') ?: '/Applications/HCL Notes.app/Contents/MacOS/'
 if (!notesInstallation) {
@@ -89,10 +98,6 @@ sourceSets {
     }
 }
 
-// Required for Java 8 Language server support
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 dependencies {
     // Local JAR dependency
     implementation files(notesJarPath)
@@ -112,7 +117,7 @@ Use "clean runApp" for the Gradle command
 */
 task runApp(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    main = mainClassName  // deprecated in later versions of Gradle - use mainClass
+    mainClass = application.mainClass
     environment('DYLD_LIBRARY_PATH', notesInstallation)
     environment('PATH', envPath)
 
