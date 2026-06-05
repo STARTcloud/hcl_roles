@@ -1,7 +1,7 @@
 ---
 run_tasks: true
 # Version information - default version if not specified
-domino_rest_api_version: 1.1.6
+domino_rest_api_version: 1.1.7
 
 # Default Domino version if not already defined by domino_install role
 domino_major_version: "{{ domino_major_version | default('14') }}"
