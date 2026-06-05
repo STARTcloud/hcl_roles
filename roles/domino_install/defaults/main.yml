@@ -15,7 +15,7 @@ id_vault_name_allow_notes_based_apps: "1"
 id_vault_password: IDVaultPassword
 id_vault_help_text: Please contact your system administrator for help!
 id_vault_enable_vault_bearer: "1"
-domino_admin_user_first_name: Prominic
+domino_admin_user_first_name: "{{ domino_organization }}"
 domino_admin_user_last_name: Admin
 domino_admin_user_id: admin-user.id
 domino_admin_notes_id_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=16') }}"
