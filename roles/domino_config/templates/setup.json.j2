@@ -8,6 +8,10 @@
 {% if domino_major_version >= 14 %}
       "additionalReplicas": [
         {
+          "databaseName": "certstore.nsf",
+          "failOnError": false
+        },
+        {
           "databaseName": "idpcat.nsf",
           "failOnError": false
         },
