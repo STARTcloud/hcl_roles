@@ -59,7 +59,7 @@ domino_countrycode: null
 domino_shutdown_delay: 30
 domino_startup_delay: 60
 domino_enable_java_agent_cache: 2
-domino_daos_enable: 0
+domino_daos_enable: 1
 domino_daos_min_obj_size: 256000
 domino_daos_encrypt_nlo: 0
 domino_daos_base_path: /local/daos
