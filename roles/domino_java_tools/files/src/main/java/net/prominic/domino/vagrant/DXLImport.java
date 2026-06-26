@@ -282,7 +282,17 @@ public class DXLImport {
             if (stream.open(dxlFile.getAbsolutePath()) & (stream.getBytes() >0)) {
                 // Import DXL from file to new database
                 importer = session.createDxlImporter();
-                importer.setReplaceDbProperties(true);  // allow replacing database properties
+                // Database-level properties (e.g. <launchsettings>) live in the <database>
+                // wrapper, not in a note. A DominoBlueprint export gives every design file a
+                // bare <database> wrapper with no such properties, so enabling property
+                // replacement for every file makes the alphabetically-last file win and
+                // silently resets launch settings to default. Enable it only for files that
+                // actually carry a database-property block (see fileDeclaresDbProperties).
+                boolean replaceDbProperties = fileDeclaresDbProperties(dxlFile);
+                importer.setReplaceDbProperties(replaceDbProperties);
+                if (replaceDbProperties) {
+                    System.out.println("  (database properties in this file will be applied to the target)");
+                }
                 importer.setReplicaRequiredForReplaceOrUpdate(false);  // don't require a matching replica ID in the DXL
                 importer.setAclImportOption(aclImportOption);   // configurable; see --acl-import
                 importer.setDesignImportOption(DxlImporter.DXLIMPORTOPTION_REPLACE_ELSE_CREATE);  // Create any missing design elements, overwrite existing design elements
@@ -386,6 +396,47 @@ public class DXLImport {
                 sb.append("\n  - ").append(path);
             }
             throw new Exception(sb.toString());
+        }
+    }
+
+    /**
+     * Return {@code true} if the DXL file carries a database-level property block in its
+     * {@code <database>} wrapper &mdash; currently {@code <launchsettings>} (web/Notes launch
+     * options) or {@code <databaseinfo>}, plus {@code <acl>} so ACL-bearing files keep their
+     * historical {@code setReplaceDbProperties(true)} behaviour for attributes such as
+     * {@code maxinternetaccess}.
+     *
+     * <p>Bare design-element files (a single {@code <form>}/{@code <view>}/... inside an
+     * otherwise-empty {@code <database>} wrapper) return {@code false}, so importing them
+     * with {@code setReplaceDbProperties(false)} cannot overwrite database properties that
+     * an earlier file (e.g. {@code other/LaunchSettings.dxl}) just applied.</p>
+     *
+     * <p>The relevant block sits at the very top of the file, immediately after the
+     * {@code <database>} open tag, so a short prefix is enough to detect it without reading
+     * large base64 file-resource payloads.</p>
+     */
+    static boolean fileDeclaresDbProperties(File dxlFile) {
+        java.io.InputStream in = null;
+        try {
+            in = new java.io.FileInputStream(dxlFile);
+            byte[] buf = new byte[4096];
+            int n = in.read(buf);
+            if (n <= 0) {
+                return false;
+            }
+            String head = new String(buf, 0, n, "UTF-8");
+            return head.contains("<launchsettings")
+                || head.contains("<databaseinfo")
+                || head.contains("<acl");
+        }
+        catch (Exception e) {
+            // On any read error, fall back to the safe default: do not replace properties.
+            return false;
+        }
+        finally {
+            if (null != in) {
+                try { in.close(); } catch (Exception ignore) { /* best effort */ }
+            }
         }
     }
 
