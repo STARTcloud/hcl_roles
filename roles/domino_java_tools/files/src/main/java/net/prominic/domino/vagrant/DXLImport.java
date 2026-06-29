@@ -300,11 +300,18 @@ public class DXLImport {
                 importer.setDocumentImportOption(DxlImporter.DXLIMPORTOPTION_REPLACE_ELSE_CREATE);   // allow importing documents.  Replace existing documents (replicaID and universal ID must match)
                 importer.importDxl(stream, database);
 
+                // Capture the log once so we can both print it and scan it for compile failures.
+                String importLog = importer.getLog();
                 System.out.println("## Log:  " + importer.getLogComment());
-                System.out.println(importer.getLog());
+                System.out.println(importLog);
                 System.out.println("## End Log");
                 System.out.println("Imported " + importer.getImportedNoteCount() + " elements");
                 // TODO: iterate over imported elements if log is insufficient
+
+                // A code-compile failure is reported by DxlImporter as a *log warning*
+                // (HCL log id 7005), not as a thrown NotesException: the design note is still
+                // created and counted as imported, so it would otherwise pass silently.
+                warnIfCompileErrors(dxlFile, importLog);
             }
         }
         finally {
@@ -397,6 +404,53 @@ public class DXLImport {
             }
             throw new Exception(sb.toString());
         }
+    }
+
+    /**
+     * Detect a code-compile failure in a DXL import log and print a short, actionable
+     * warning when one is found.
+     *
+     * <p>When DxlImporter imports a Java agent, Java script library, or LotusScript element it
+     * compiles the code at import time.  A compile failure is reported as a <em>log warning</em>
+     * (HCL log id {@code 7005}, e.g. {@code "Java compile errors: ..."}), <strong>not</strong> as
+     * a thrown {@link NotesException}.  The design note is still created and is included in
+     * {@link DxlImporter#getImportedNoteCount()}, so without this check a broken element would
+     * import "successfully" and only fail later at runtime.</p>
+     *
+     * <p>This is deliberately a warning rather than a hard failure.  The usual cause is
+     * dependency <em>ordering</em>, not bad DXL: each element is compiled against whatever already
+     * exists in the target database, so a referenced Java script library
+     * ({@code <sharedlibraryref>}), a LotusScript library referenced via {@code Use}, or a
+     * {@code .jar} file resource imported later is simply not on the build path yet.  Re-running
+     * the import once every element and resource is present (or recompiling in Domino Designer)
+     * typically clears it.  Dependency-aware import ordering is tracked as a separate enhancement
+     * for the DominoBlueprint importer.</p>
+     *
+     * @return {@code true} if a compile error was detected and a warning was printed.
+     */
+    static boolean warnIfCompileErrors(File dxlFile, String importLog) {
+        if (null == importLog || importLog.isEmpty()) {
+            return false;
+        }
+        // Match the numeric HCL log id and the human-readable phrasing, which covers both
+        // "Java compile errors" and "LotusScript ... compile error" wording across versions.
+        boolean hasCompileError =
+               importLog.contains("id='7005'")
+            || importLog.contains("id=\"7005\"")
+            || importLog.toLowerCase().contains("compile error");
+        if (!hasCompileError) {
+            return false;
+        }
+        String name = (null == dxlFile) ? "(unknown)" : dxlFile.getName();
+        System.out.println("  [WARNING] '" + name + "' was imported as a design note, but its code");
+        System.out.println("            did NOT compile (see the 'compile errors' in the log above).");
+        System.out.println("            The note exists in the target database but will not run until it");
+        System.out.println("            compiles cleanly.  This is normally a dependency-ordering issue:");
+        System.out.println("            code is compiled at import time against whatever is already in the");
+        System.out.println("            database, so a referenced script library or .jar file resource that");
+        System.out.println("            is imported later is not yet on the build path.  Re-run the import");
+        System.out.println("            once all elements/resources are present, or recompile in Designer.");
+        return true;
     }
 
     /**

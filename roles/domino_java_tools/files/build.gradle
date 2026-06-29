@@ -68,10 +68,39 @@ String findFile(String baseDir, String findName) {
     return foundFile
 }
 
-// build a jar path to use for Notes.jar
-// Supports local and Linux server executions
-String notesJarPath = findFile(notesJarBaseDir, 'Notes.jar')
-String jarClassPath = "./Notes.jar {{ domino_install_dir }}/jvm/lib/ext/Notes.jar ${notesJarPath.replaceAll(' ', '%20').replaceAll('^\\w+:', '/$0')}"
+// Resolve every Domino JAR the tools link against, once, so the same detected paths feed
+// both the compile/runtime dependencies (below) and the executable-jar manifest Class-Path.
+// Supports local and Linux server executions.
+List<String> dominoJarNames = ['Notes.jar', 'lwpd.domino.napi.jar', 'lwpd.commons.jar', 'websvc.jar']
+Map<String, String> dominoJarPaths = [:]
+dominoJarNames.each { String jarName ->
+    String found = findFile(notesJarBaseDir, jarName)
+    dominoJarPaths[jarName] = found
+    if (!found) {
+        logger.warn "Domino JAR '$jarName' not found under '$notesJarBaseDir'; it will be omitted from the manifest Class-Path."
+    }
+}
+
+String notesJarPath = dominoJarPaths['Notes.jar']
+if (!notesJarPath) {
+    throw new GradleException("Required 'Notes.jar' not found under '$notesJarBaseDir'. Check notesInstallation in gradle.properties.")
+}
+
+// Encode an absolute path for a manifest Class-Path entry: spaces -> %20, and prefix a leading
+// Windows drive letter (e.g. C:) with '/' so it forms a valid file reference.
+Closure<String> manifestEntry = { String path -> path.replaceAll(' ', '%20').replaceAll('^\\w+:', '/$0') }
+
+// For each Domino JAR, list it both alongside the executable jar (./name, e.g. when copied for
+// deployment) and at its detected absolute location, so the jar runs whether the Domino JARs sit
+// next to it or only in the installation directory.
+List<String> classPathEntries = []
+dominoJarNames.each { String jarName ->
+    classPathEntries << "./$jarName"
+    if (dominoJarPaths[jarName]) {
+        classPathEntries << manifestEntry(dominoJarPaths[jarName])
+    }
+}
+String jarClassPath = classPathEntries.join(' ')
 
 logger.debug "Environment"
 System.env.each {
@@ -99,11 +128,14 @@ sourceSets {
 }
 
 dependencies {
-    // Local JAR dependency
+    // Domino JARs resolved once above (dominoJarPaths). Paths vary across installations, so they
+    // are detected via findFile rather than hard-coded.
     implementation files(notesJarPath)
-    // the paths to these files vary for the different Domino installations, so search for them instead
-    implementation files(findFile(notesJarBaseDir, 'lwpd.domino.napi.jar'))
-    implementation files(findFile(notesJarBaseDir, 'lwpd.commons.jar'))
+    implementation files(dominoJarPaths['lwpd.domino.napi.jar'])
+    implementation files(dominoJarPaths['lwpd.commons.jar'])
+    // websvc.jar is required for DXLImport.java to import Java agents (native DxlImporter loads
+    // lotus.domino.websvc.* / axis.* / ws.* when compiling a Java agent)
+    implementation files(dominoJarPaths['websvc.jar'])
 
 
     implementation 'org.json:json:20160212'  // For parsing setup.json
@@ -132,8 +164,11 @@ jar {
         // runtimeClasspath includes implementation and runtimeOnly dependencies
         // findResults allows using null to exclude results
         configurations.runtimeClasspath.findResults { File dependency ->
-            if (dependency.getName().equalsIgnoreCase("Notes.jar")) {
-                return null  // skip this entry
+            // Do NOT bundle the licensed HCL Domino JARs (Notes.jar, lwpd.*, websvc.jar) into the
+            // executable jar -- they must not travel between systems. They are supplied at runtime
+            // via the manifest Class-Path (jarClassPath: ./<name> + detected install location).
+            if (dominoJarNames.any { it.equalsIgnoreCase(dependency.getName()) }) {
+                return null  // skip this entry (licensed Domino JAR)
             }
             else {
                 return dependency.isDirectory() ? dependency : zipTree(dependency)
