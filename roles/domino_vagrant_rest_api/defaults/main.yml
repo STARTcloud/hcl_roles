@@ -8,8 +8,7 @@ rest_interface_jar: rest-interface-1.9.0.jar
 rest_interface_java_version: "17.0.16-zulu"
 rest_vagrant_crud_git_repo: https://github.com/Moonshine-IDE/Vagrant-REST-Interface/releases/download/
 domino_vagrant_rest_api_port_forwards:
-  -
-    guest: 8080
+  - guest: 8080
     url: "restapi"
 domino_vagrant_rest_api_proxy_url: "{{ domino_vagrant_rest_api_port_forwards[0].url }}.{{ settings.hostname }}.{{ settings.domain }}"
 

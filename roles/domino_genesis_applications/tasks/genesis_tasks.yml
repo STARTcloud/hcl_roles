@@ -1,6 +1,5 @@
 ---
--
-  name: "Installing Genesis Application"
+- name: "Installing Genesis Application"
   ansible.builtin.shell: domino cmd "tell genesis install {{ item }}" 50
   become: true
   args:
@@ -8,8 +7,7 @@
   register: domino_genesis_applications
   changed_when: false
 
--
-  name: "Checking if Package has been installed"
+- name: "Checking if Package has been installed"
   ansible.builtin.wait_for:
     path: "{{ domino_home_dir }}/IBM_TECHNICAL_SUPPORT/console.log"
     search_regex: "installed {{ item }}"

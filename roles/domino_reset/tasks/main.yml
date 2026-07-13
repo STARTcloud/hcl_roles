@@ -1,30 +1,26 @@
 ---
--
-  name: "Block to Allow Loading of Variables without running task"
+- name: "Block to Allow Loading of Variables without running task"
   when: run_tasks
   block:
-    -
-      name: "Checking if Domino has been installed"
+    - name: "Checking if Domino has been installed"
       register: domino_server_installed
       ansible.builtin.stat:
         path: "{{ domino_home_dir }}/notes.ini"
         checksum_algorithm: sha256
-    
-    -
-      name: "Stopping Domino and disabling Domino"
+
+    - name: "Stopping Domino and disabling Domino"
       when: domino_server_installed.stat.exists
       become: true
       ansible.builtin.service:
         name: domino
         state: stopped
         enabled: false
-    
-    -
-      name: "Removing Domino Data Directories"
+
+    - name: "Removing Domino Data Directories"
       become: true
       when: domino_server_installed.stat.exists
       ansible.builtin.file:
-        mode: '0644'
+        mode: "0644"
         path: "{{ item.path }}"
         state: "absent"
       with_items:
@@ -49,13 +45,12 @@
         - { path: "{{ completed_dir }}/javabuildtools" }
         - { path: "{{ completed_dir }}/sametime_installed" }
         - { path: "{{ completed_dir }}/oidc_configured_check" }
-    
-    -
-      name: "Setting domino_reset as completed"
+
+    - name: "Setting domino_reset as completed"
       become: true
       when: domino_server_installed.stat.exists
       ansible.builtin.file:
-        mode: '0644'
+        mode: "0644"
         path: "{{ item.path }}"
         state: "touch"
       with_items:

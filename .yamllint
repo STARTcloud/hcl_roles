@@ -1,0 +1,23 @@
+---
+# Single collection-root yamllint config. Strict yamllint `default` ruleset with
+# two Ansible-practical adjustments. ansible-lint auto-detects this file for its
+# `yaml` rule, and standalone `yamllint .` uses it too.
+extends: default
+
+rules:
+  # Ansible task lines (long module args, Jinja) routinely exceed 80; warn only.
+  line-length:
+    max: 200
+    level: warning
+  # Match the house style: booleans must be true/false, not yes/no/on/off.
+  truthy:
+    allowed-values: ["true", "false"]
+  # Required overrides for ansible-lint's yaml rule / --fix compatibility check.
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: false
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

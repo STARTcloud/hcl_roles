@@ -1,3 +1,4 @@
+---
 galaxy_info:
   role_name: domino_voltmx_go
   author: MarkProminic
@@ -5,16 +6,12 @@ galaxy_info:
   company: STARTCloud
   issue_tracker_url: https://github.com/STARTcloud/hcl_roles/issues
   license: license (Apache)
-  min_ansible_version: '2.9'
+  min_ansible_version: "2.9"
 
   platforms:
     - name: Debian
       versions:
-        - 'bookworm'
+        - "bookworm"
 
   galaxy_tags: []
-
 dependencies: []
-
-collections:
-  - startcloud.startcloud_roles

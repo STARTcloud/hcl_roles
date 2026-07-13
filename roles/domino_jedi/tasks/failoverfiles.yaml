@@ -1,83 +1,79 @@
+---
 - name: Check if localzip exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ failover_localzip }}"
   register: zip_file
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Ensure the local zip directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ failover_localzip | dirname }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Download the zip file if it does not exist
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ failover_url }}"
     dest: "{{ failover_localzip }}"
+    mode: "0644"
   when: not zip_file.stat.exists
-  ignore_errors: no
-      
+  ignore_errors: false
 
 - name: Ensure the destination directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ failover_destdir }}"
     state: directory
-    mode: '0755'
-  ignore_errors: yes
+    mode: "0755"
+  failed_when: false
 
 - name: Extract the zip file to the destination directory (strip top-level directory)
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ failover_localzip }}"
     dest: "{{ failover_destdir }}"
-    remote_src: yes
-
-  ignore_errors: yes
+    remote_src: true
+  failed_when: false
 
 - name: Check if the target directory exists after extraction
-  stat:
+  ansible.builtin.stat:
     path: "{{ failover_destdir }}/{{ failover_app_name }}"
   register: destdir_stat
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: Copy source directory to target directory if it doesn't exist
-  copy:
+  ansible.builtin.copy:
     src: "{{ failover_localdir }}"
     dest: "{{ failover_destdir }}"
+    mode: preserve
   when: not destdir_stat.stat.exists
 
 - name: Verify the files were copied
-  stat:
+  ansible.builtin.stat:
     path: "{{ failover_destdir }}/{{ failover_app_name }}"
   register: destdir_stat
-  ignore_errors: no
-
-
-
+  ignore_errors: false
 
 - name: Fail if the path does not exist
-  fail:
+  ansible.builtin.fail:
     msg: "The path '{{ failover_destdir }}/{{ failover_app_name }}' does not exist."
   when: not destdir_stat.stat.exists
 
-
-
 - name: Verify the files were copied
-  stat:
+  ansible.builtin.stat:
     path: "{{ failover_destdir }}/{{ failover_app_name }}"
   register: destdir_stat
-  ignore_errors: no
+  ignore_errors: false
 
 - name: Check content of the target directory
-  find:
+  ansible.builtin.find:
     paths: "{{ failover_destdir }}/{{ failover_app_name }}"
-    recurse: yes
+    recurse: true
   register: target_files
 
 - name: Fail if the target directory is empty
-  fail:
+  ansible.builtin.fail:
     msg: "The target directory '{{ failover_destdir }}' is empty."
   when: target_files.matched == 0
 
 - name: Print files in the target directory
-  debug:
-    msg: "Files in '{{ failover_destdir }}/{{ failover_app_name  }}': {{ target_files.files | map(attribute='path') | list }}"
+  ansible.builtin.debug:
+    msg: "Files in '{{ failover_destdir }}/{{ failover_app_name }}': {{ target_files.files | map(attribute='path') | list }}"

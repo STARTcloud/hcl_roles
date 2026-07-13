@@ -21,11 +21,9 @@ leap_build_map:
 leap_debug: false
 installer_url_app_path: "SHI/Leap"
 domino_leap_port_forwards:
-  -
-    guest: "{{ domino_install_port_forwards[0].guest }}"
+  - guest: "{{ domino_install_port_forwards[0].guest }}"
     url: "leap"
-  -
-    guest: "{{ domino_install_port_forwards[1].guest }}"
+  - guest: "{{ domino_install_port_forwards[1].guest }}"
     url: "leap"
 domino_leap_proxy_url: "{{ domino_leap_port_forwards[0].url }}.{{ settings.hostname }}.{{ settings.domain }}"
 domino_oidc_provider_leap_home_url: "/volt-apps/secure/org/ide/manager.html"

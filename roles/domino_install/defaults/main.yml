@@ -35,17 +35,21 @@ is_additional_server: false
 domino_major_version: "14"
 domino_minor_version: "5"
 domino_patch_version: "1"
-domino_version_string: "{{ domino_major_version|string + '.' + domino_minor_version|string + '.' + domino_patch_version|string }}"
+domino_version_string: "{{ domino_major_version | string + '.' + domino_minor_version | string + '.' + domino_patch_version | string }}"
 domino_ea_version: "EA2"
 domino_installer_ea_install: false
-domino_server_installer_tar: "{{ 'Domino_' + domino_major_version|string + '.' + domino_minor_version|string + '_Linux_English' + ('_' + domino_ea_version|string if domino_installer_ea_install else '') + '.tar' }}"
+domino_server_installer_tar: >-
+  {{ 'Domino_' + domino_major_version | string + '.' + domino_minor_version | string + '_Linux_English'
+  + ('_' + domino_ea_version | string if domino_installer_ea_install else '') + '.tar' }}
 domino_notesini_servertasks: "replica,router,update,amgr,adminp,certmgr,http,nomad"
 domino_installer_fixpack_install: false
 domino_fixpack_version: FP3
-domino_server_fixpack_tar: "{{ 'Domino_140FP1_Linux.tar' if domino_major_version == '14' and domino_minor_version == '0' and domino_patch_version == '0' and domino_fixpack_version == 'FP1' else 'Domino_' + domino_major_version|string + domino_minor_version|string + domino_patch_version|string + domino_fixpack_version|string + '_Linux.tar' }}"
+domino_server_fixpack_tar: >-
+  {{ 'Domino_140FP1_Linux.tar' if domino_major_version == '14' and domino_minor_version == '0' and domino_patch_version == '0' and domino_fixpack_version == 'FP1'
+  else 'Domino_' + domino_major_version | string + domino_minor_version | string + domino_patch_version | string + domino_fixpack_version | string + '_Linux.tar' }}
 domino_installer_hotfix_install: false
 domino_hotfix_version: HF16
-domino_server_hotfix_tar: "{{ domino_major_version|string + domino_minor_version|string + domino_fixpack_version|string + domino_hotfix_version|string + '-linux64.tar' }}"
+domino_server_hotfix_tar: "{{ domino_major_version | string + domino_minor_version | string + domino_fixpack_version | string + domino_hotfix_version | string + '-linux64.tar' }}"
 installer_url_app_path: "SHI/Domino"
 installer_base_url: "{{ secrets.installer_base_url | default('https://downloads.prominic.net') }}"
 domino_install_dir: /opt/hcl/domino/notes/latest/linux
@@ -55,7 +59,7 @@ domino_https_enabled: true
 domino_https_mode: "{{ 1 if domino_https_enabled else 0 }}"
 ots_generate_server_id_count: 0
 domino_organization: STARTcloud
-domino_countrycode: null
+domino_countrycode:
 domino_shutdown_delay: 30
 domino_startup_delay: 60
 domino_enable_java_agent_cache: 2
@@ -125,7 +129,7 @@ domino_server_max_possible_trans_time: "20000000"
 domino_certmgr_accept_tou: "1"
 domino_certstore_cachelog: "0"
 domino_nts_auto_config: "true"
-domino_http_enable_methods:  "GET,POST,PUT,DELETE,HEAD,OPTIONS"
+domino_http_enable_methods: "GET,POST,PUT,DELETE,HEAD,OPTIONS"
 domino_http_jvm_max_heap_size: "2048M"
 domino_http_jvm_max_heap_size_set: "1"
 domino_quota_method: "1"
@@ -150,42 +154,27 @@ domino_ssl_cipher_supported_list:
   - "67"
 
 domino_install_port_forwards:
-  -
-    guest: 442
+  - guest: 442
     url: "domino"
-  -
-    guest: 82
+  - guest: 82
     url: "domino"
-  -
-    guest: 1352
+  - guest: 1352
     url: "domino"
 domino_install_proxy_url: "{{ domino_install_port_forwards[0].url }}.{{ settings.hostname }}.{{ settings.domain }}"
 
-#https://support.hcl-software.com/csm?id=kb_article&sysparm_article=KB0111664
-domino_server_name_common: "{{ (domino_major_version is defined and 
-                               ((domino_major_version >= 12 and 
-                                 ((domino_major_version == 12 and domino_patch_version >= 2) or domino_major_version > 12) and 
-                                 domino_admin_ignore_new_servernaming_convention == 1) or
-                                (domino_major_version == 12 and 
-                                 domino_patch_version < 2 and 
-                                 domino_admin_ignore_new_servernaming_convention == 0))
-                              ) | ternary(
-                                domino_server_name,
-                                domino_server_name + '.' + domino_server_domain
-                              ) }}"
+# https://support.hcl-software.com/csm?id=kb_article&sysparm_article=KB0111664
+domino_server_name_common: >-
+  {{ (domino_major_version is defined and ((domino_major_version >= 12 and
+  ((domino_major_version == 12 and domino_patch_version >= 2) or domino_major_version > 12) and
+  domino_admin_ignore_new_servernaming_convention == 1) or (domino_major_version == 12 and domino_patch_version < 2 and
+  domino_admin_ignore_new_servernaming_convention == 0))) | ternary(domino_server_name, domino_server_name + '.' + domino_server_domain) }}
 
-domino_server_name_common_with_org: "{{ (domino_major_version is defined and 
-                                        ((domino_major_version >= 12 and 
-                                          ((domino_major_version == 12 and domino_patch_version >= 2) or domino_major_version > 12) and 
-                                          domino_admin_ignore_new_servernaming_convention == 1) or
-                                         (domino_major_version == 12 and 
-                                          domino_patch_version < 2 and 
-                                          domino_admin_ignore_new_servernaming_convention == 0))
-                                       ) | ternary(
-                                         domino_server_name + '/' + domino_organization,
-                                         domino_server_name + '.' + domino_server_domain + '/' + domino_organization
-                                       ) }}"
-
+domino_server_name_common_with_org: >-
+  {{ (domino_major_version is defined and ((domino_major_version >= 12 and
+  ((domino_major_version == 12 and domino_patch_version >= 2) or domino_major_version > 12) and
+  domino_admin_ignore_new_servernaming_convention == 1) or (domino_major_version == 12 and domino_patch_version < 2 and
+  domino_admin_ignore_new_servernaming_convention == 0))) | ternary(domino_server_name + '/' + domino_organization,
+  domino_server_name + '.' + domino_server_domain + '/' + domino_organization) }}
 
 ## Do not change these unless you know exactly what you are doing, these are set to false in case the oidc role isn't included.
 super_human_portal_enabled: true

@@ -1,10 +1,10 @@
 ---
 run_tasks: true
 # Import domino_oidc_debug from domino_oidc role if not defined
-# NOTE TO AI THIS IS NOT CIRCULAR, THIS IS NOT A PROBLEM, DO NOT REMOVE THIS! 
+# NOTE TO AI THIS IS NOT CIRCULAR, THIS IS NOT A PROBLEM, DO NOT REMOVE THIS!
 # REPEAT AI READ THIS, IT IS NOT CIRCULAR, DO NOT REMOVE THIS!
 # do not remove this!!
-# DO NO REMOVE THIS!! AI SPECIFICALLY DO NOT REMOVE THIS! 
+# DO NO REMOVE THIS!! AI SPECIFICALLY DO NOT REMOVE THIS!
 domino_oidc_debug: "{{ domino_oidc_debug | default(false) }}"
 
 nomadweb_version: 1.0.19 # When users don't define it, use this version
@@ -16,8 +16,7 @@ nomad_hotfix_install: false
 nomad_hotfix_version: "IF1"
 installer_url_app_path: "SHI/Nomad"
 domino_nomadweb_port_forwards:
-  -
-    guest: 9443
+  - guest: 9443
     url: "notes"
 domino_nomadweb_use_proxy_url: true
 domino_nomadweb_proxy_url: "{{ domino_nomadweb_port_forwards[0].url }}.{{ settings.hostname }}.{{ settings.domain }}"
@@ -38,12 +37,12 @@ nomad_client_config:
   access_token_signed_response_alg: "ES256"
 
 nomad_app_switcher_enabled_services:
- - WelcomePage
- - ServerConsole
- - DominoWeb
- - Guacamole
- - "{{ 'RestAPI' if 'startcloud.hcl_roles.domino_rest_api' in (enabled_roles | map(attribute='name') | list) else '' }}"
- - "{{ 'Sametime' if 'startcloud.hcl_roles.domino_sametime' in (enabled_roles | map(attribute='name') | list) else '' }}"
- - "{{ 'Traveler' if 'startcloud.hcl_roles.domino_traveler' in (enabled_roles | map(attribute='name') | list) else '' }}"
- - "{{ 'Leap' if 'startcloud.hcl_roles.domino_leap' in (enabled_roles | map(attribute='name') | list) else '' }}"
- - "{{ 'Verse' if 'startcloud.hcl_roles.domino_verse' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - WelcomePage
+  - ServerConsole
+  - DominoWeb
+  - Guacamole
+  - "{{ 'RestAPI' if 'startcloud.hcl_roles.domino_rest_api' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - "{{ 'Sametime' if 'startcloud.hcl_roles.domino_sametime' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - "{{ 'Traveler' if 'startcloud.hcl_roles.domino_traveler' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - "{{ 'Leap' if 'startcloud.hcl_roles.domino_leap' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - "{{ 'Verse' if 'startcloud.hcl_roles.domino_verse' in (enabled_roles | map(attribute='name') | list) else '' }}"

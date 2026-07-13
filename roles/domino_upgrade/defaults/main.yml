@@ -38,15 +38,12 @@ domino_install_basedir: /opt/hcl/domino
 domino_https_enabled: 1
 ots_generate_server_id_count: 0
 domino_organization: STARTcloud
-domino_countrycode: null
+domino_countrycode:
 domino_install_port_forwards:
-  -
-    guest: 442
+  - guest: 442
     url: "domino"
-  -
-    guest: 82
+  - guest: 82
     url: "domino"
-  -
-    guest: 1352
+  - guest: 1352
     url: "domino"
 domino_install_proxy_url: "{{ domino_install_port_forwards[0].url }}.{{ settings.hostname }}.{{ settings.domain }}"

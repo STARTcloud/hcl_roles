@@ -1,8 +1,5 @@
 ---
 run_tasks: true
-count_progress: true
-progress_units: 1
-progress_role_description: "Installing VoltMX Go"
 
 installer_url_app_path: "SHI/VoltMXGo"
 

@@ -1,1 +1,2 @@
+---
 haproxy_default_backend: "domino"

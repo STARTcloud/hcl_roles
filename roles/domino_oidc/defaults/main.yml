@@ -26,20 +26,20 @@ domino_oidc_provider_login_form_db: domcfg.nsf
 domino_oidc_provider_web_home_url: "/names.nsf?open"
 domino_oidc_trusted_roots: ""
 domino_oidc_auth_type: "B"
-#None|N
-#Client secret basic|B
-#Client secret post|P
-#Private key JWT|J
+# None|N
+# Client secret basic|B
+# Client secret post|P
+# Private key JWT|J
 
 domino_oidc_simplify_redirect_url: "1"
 domino_oidc_bearer_options: "0"
 domino_oidc_bearer_custom_claim_names: ""
 domino_oidc_bearer_alternate_audiences: ""
 domino_oidc_bearer_allowed_client_ids: ""
-domino_oidc_log_level: "3" #1 Minimal, 2 Standard, 3 verbose
+domino_oidc_log_level: "3" # 1 Minimal, 2 Standard, 3 verbose
 
 domino_oidc_external_providers:
-  - name: null
-    base_url: null
-    client_id: null
-    client_secret: null
+  - name:
+    base_url:
+    client_id:
+    client_secret:

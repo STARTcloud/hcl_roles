@@ -1,3 +1,4 @@
+---
 galaxy_info:
   role_name: leap
   author: MarkProminic
@@ -5,7 +6,7 @@ galaxy_info:
   company: STARTCloud
   # issue_tracker_url: http://example.com/issue/tracker
   license: license (Apache)
-  min_ansible_version: '1.2'
+  min_ansible_version: "1.2"
 
   # Optionally specify the branch Galaxy will use when accessing the GitHub
   # repo for this role. During role install, if no tags are available,
@@ -18,7 +19,7 @@ galaxy_info:
   platforms:
     - name: Debian
       versions:
-        - 'bookworm'
+        - "bookworm"
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is a keyword that describes

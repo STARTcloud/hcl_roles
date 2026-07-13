@@ -1,11 +1,6 @@
 ---
 run_tasks: true
 
-# Progress reporting
-count_progress: true
-progress_units: 1
-progress_role_description: "Installing HCL Notes"
-
 # Notes Client Version Settings
 notes_major_version: "14"
 notes_minor_version: "5"
@@ -26,7 +21,7 @@ admin_designer_notes_installer_exe: "Notes_Designer_Admin_14.5_Win64_English.exe
 # Conditional installer selection based on installation type
 notes_installer_exe: "{{ client_only_notes_installer_exe if notes_installation_type == 'client_only' else admin_designer_notes_installer_exe }}"
 
-#Notes_Designer_Admin_14.0_Win64_English.exe
+# Notes_Designer_Admin_14.0_Win64_English.exe
 notes_fixpack_exe: "Notes_1400FP3_Win64.exe"
 notes_hotfix_exe: "1400FP3SHF20_W64_standard.exe"
 

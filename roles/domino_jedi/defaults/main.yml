@@ -1,11 +1,10 @@
 ---
 run_tasks: true
 packages:
-
 # If true, then Jedi will manage Domino, if false, Nashed script will manage domino, but during provisioning this switches to Ansible.
 jedi_enabled: true
 
-jedi_service:  jedi
+jedi_service: jedi
 prominic_install_dir: /opt/prominic
 jedi_install_dir: "{{ prominic_install_dir }}/jedi"
 jedi_install_lib_dir: "{{ jedi_install_dir }}/lib"
@@ -37,7 +36,7 @@ jedi_server_joes_port: 1710
 jedi_server_ssljoes_port: 1711
 # why this
 jedi_noteslog: /local/notesdata/noteslog
-# online zip 
+# online zip
 jedi_online_zip: https://public-artifacts.prominic.net/jedi/jedi.zip
 jedi_local_zip: installers/jedi/archives/jedi.zip
 jedi_local_unpack_dir: "{{ role_path }}/files/jedi"
@@ -51,7 +50,5 @@ jedi_domino_autostart: true
 # true if the jedi SSL configuration should be updated based on the other jedi_ssl properties.  Otherwise, it will use the configuration provided by the JeDI template
 jedi_ssl_update: true
 # By default, use the JKS certificate generated for this instance
-jedi_ssl_cert:  "{{ cert_dir }}/jks/{{ settings.hostname }}.{{ settings.domain }}.jks"
-jedi_ssl_cert_password:  "{{ cert_pass }}"
-
-
+jedi_ssl_cert: "{{ cert_dir }}/jks/{{ settings.hostname }}.{{ settings.domain }}.jks"
+jedi_ssl_cert_password: "{{ cert_pass }}"

@@ -1,3 +1,4 @@
+---
 galaxy_info:
   role_name: domino_notes_install
   author: MarkProminic
@@ -5,7 +6,7 @@ galaxy_info:
   company: STARTCloud
   # issue_tracker_url: http://example.com/issue/tracker
   license: license (Apache)
-  min_ansible_version: '2.10'
+  min_ansible_version: "2.10"
 
   # Optionally specify the branch Galaxy will use when accessing the GitHub
   # repo for this role. During role install, if no tags are available,
@@ -18,10 +19,7 @@ galaxy_info:
   platforms:
     - name: Windows
       versions:
-        - '10'
-        - '11'
-        - '2019'
-        - '2022'
+        - "all"
 
   galaxy_tags:
     - hcl

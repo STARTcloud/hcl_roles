@@ -9,9 +9,7 @@ voltmx_admin_last_name: Admin
 voltmx_admin_email: "{{ email }} | default('support@startcloud.com')"
 voltmx_admin_pass: "SomeRandomPasswordSecureMe@!"
 voltmx_port_forwards:
-  -
-    guest: 8181
+  - guest: 8181
     url: "voltmx"
-  -
-    guest: 8444
+  - guest: 8444
     url: "voltmx"

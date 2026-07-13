@@ -1,0 +1,12 @@
+---
+# Galaxy collection dependencies referenced by this collection's roles.
+# Installed locally so ansible-lint can resolve FQCNs and validate module
+# parameters instead of guessing. Not consumed at provisioning time (the VM
+# guest installs its own copy via provisioners/ansible/requirements.yml plus
+# whatever the box image already bundles) — this is a lint/dev-time file.
+collections:
+  - name: ansible.windows
+  - name: ansible.posix
+  - name: community.general
+  - name: community.windows
+  - name: community.crypto

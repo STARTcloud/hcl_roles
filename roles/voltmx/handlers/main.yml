@@ -1,6 +1,5 @@
 ---
--
-  name: "Restart VoltMX"
+- name: "Restart VoltMX"
   listen: Restart voltmx
   become: true
   ansible.builtin.service:
@@ -12,8 +11,7 @@
   retries: 3
   delay: 30
 
--
-  name: "Stop VoltMX"
+- name: "Stop VoltMX"
   listen: Stop voltmx
   become: true
   ansible.builtin.service:
@@ -25,8 +23,7 @@
   retries: 3
   delay: 30
 
--
-  name: "Start VoltMX"
+- name: "Start VoltMX"
   listen: Start voltmx
   become: true
   ansible.builtin.service:
