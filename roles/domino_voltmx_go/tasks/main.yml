@@ -37,6 +37,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the VoltMX Go archive after the Bearer download"
+      register: voltmx_go_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/voltmx/archives/{{ voltmx_go_installer_archive }}"
+
     - name: "Downloading VoltMX Go Plugin Installer using basic auth from {{ installer_base_url }}"
       register: voltmxgoresult
       until: "voltmxgoresult is not failed"
@@ -49,10 +54,9 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not voltmx_go_server_installer_check.stat.exists
+        - not voltmx_go_archive_post_bearer.stat.exists
         - not voltmx_go_server_installed.stat.exists
         - not voltmx_go_extracted.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or voltmxgoresult_bearer is failed)
 
     - name: "Extracting VoltMX Go plugin from {{ voltmx_go_installer_archive }}"
       when: not voltmx_go_server_installed.stat.exists or not voltmx_go_extracted.stat.exists

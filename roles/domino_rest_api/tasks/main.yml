@@ -50,6 +50,11 @@
             - secrets.installer_url_bearer != ''
           failed_when: false
 
+        - name: "Re-checking the domino-rest-api archive after the Bearer download"
+          register: domino_restapi_archive_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/domino-rest-api/archives/{{ domino_rest_api_archive }}"
+
         - name: "Downloading domino-rest-api using basic auth from {{ installer_base_url }}"
           register: domino_rest_apiresult
           until: "domino_rest_apiresult is not failed"
@@ -62,8 +67,7 @@
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
           when:
-            - not domino_restapi_installer_check.stat.exists
-            - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or domino_rest_apiresult_bearer is failed)
+            - not domino_restapi_archive_post_bearer.stat.exists
 
         - name: "Extracting domino-rest-api from {{ domino_rest_api_archive }}"
           ansible.builtin.unarchive:

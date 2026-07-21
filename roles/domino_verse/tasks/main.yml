@@ -62,6 +62,11 @@
             - secrets.installer_url_bearer != ''
           failed_when: false
 
+        - name: "Re-checking the Verse archive after the Bearer download"
+          register: verse_archive_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/verse/archives/{{ verse_archive }}"
+
         - name: "Downloading Verse using basic auth from {{ installer_base_url }}"
           register: verseresult
           until: "verseresult is not failed"
@@ -74,8 +79,7 @@
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
           when:
-            - not verse_installer_check.stat.exists
-            - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or verseresult_bearer is failed)
+            - not verse_archive_post_bearer.stat.exists
 
         - name: "Extracting Verse from {{ verse_archive }}"
           ansible.builtin.unarchive:

@@ -125,6 +125,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the VoltMX archive after the Bearer download"
+      register: voltmx_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/voltmx/archives/{{ voltmx_installer_archive }}"
+
     - name: "Downloading VoltMX using basic auth from {{ installer_base_url }}"
       register: voltlsresult
       until: "voltlsresult is not failed"
@@ -137,10 +142,9 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not voltmx_server_installer_check.stat.exists
+        - not voltmx_archive_post_bearer.stat.exists
         - not voltmx_server_installed.stat.exists
         - not voltmx_extracted.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or voltlsresult_bearer is failed)
 
     - name: "Extracting voltmx from {{ voltmx_installer_archive }}"
       when: not voltmx_server_installed.stat.exists or not voltmx_extracted.stat.exists

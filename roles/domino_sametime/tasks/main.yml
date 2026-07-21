@@ -40,6 +40,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the Sametime archive after the Bearer download"
+      register: sametime_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/sametime/archives/{{ sametime_archive }}"
+
     - name: "Downloading Sametime using basic auth from {{ installer_base_url }}"
       register: sametimeresult
       until: "sametimeresult is not failed"
@@ -52,9 +57,8 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not sametime_installer_check.stat.exists
+        - not sametime_archive_post_bearer.stat.exists
         - not sametime_installed_check.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or sametimeresult_bearer is failed)
 
     - name: "Extracting Sametime from {{ sametime_archive }}"
       when: not sametime_installed_check.stat.exists

@@ -76,6 +76,11 @@
             secrets.installer_url_bearer != ''
           failed_when: false
 
+        - name: "Re-checking the Nomad archive after the Bearer download"
+          register: nomad_archive_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/nomadweb/archives/{{ nomadweb_archive }}"
+
         - name: "Downloading Nomad using basic auth from {{ installer_base_url }}"
           register: nomadwebresult
           until: "nomadwebresult is not failed"
@@ -88,14 +93,13 @@
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
           when: >
-            not nomad_archive_check.stat.exists and  (
+            not nomad_archive_post_bearer.stat.exists and  (
               domino_major_version is version('14', '<') or
               (
                 nomadweb_installed_via_domino_check.stat.exists and
                 nomad_version is version(nomadweb_domino_installed_version, '>')
               )
-            ) and
-            (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or nomadwebresult_bearer is failed)
+            )
 
         - name: "Extracting Nomad from {{ nomadweb_archive }}"
           when: >
@@ -176,6 +180,11 @@
                 secrets.installer_url_bearer != ''
               failed_when: false
 
+            - name: "Re-checking the Nomad Hotfix archive after the Bearer download"
+              register: nomad_hotfix_archive_post_bearer
+              ansible.builtin.stat:
+                path: "{{ installer_dir }}/nomadweb/archives/{{ nomad_hotfix_archive }}"
+
             - name: "Downloading Nomad Hotfix using basic auth from {{ installer_base_url }}"
               register: nomadwebresulthotfix
               until: "nomadwebresulthotfix is not failed"
@@ -188,15 +197,14 @@
                 username: "{{ installer_url_user }}"
                 password: "{{ secrets.installer_url_pass }}"
               when: >
-                not nomad_archive_check.stat.exists and
+                not nomad_hotfix_archive_post_bearer.stat.exists and
                 (
                   domino_major_version is version('14', '<') or
                   (
                     nomadweb_installed_via_domino_check.stat.exists and
                     nomad_version is version(nomadweb_domino_installed_version, '>')
                   )
-                ) and
-                (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or nomadwebresulthotfix_bearer is failed)
+                )
 
             - name: "Extracting Nomad Hotfix from {{ nomad_hotfix_archive }}"
               when: >

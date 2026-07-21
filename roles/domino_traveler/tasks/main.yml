@@ -42,6 +42,11 @@
             - secrets.installer_url_bearer != ''
           failed_when: false
 
+        - name: "Re-checking the Traveler archive after the Bearer download"
+          register: traveler_archive_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/traveler/archives/{{ traveler_archive }}"
+
         - name: "Downloading Traveler using basic auth from {{ installer_base_url }}"
           register: travelerresult
           until: "travelerresult is not failed"
@@ -54,8 +59,7 @@
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
           when:
-            - not traveler_installer_check.stat.exists
-            - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or travelerresult_bearer is failed)
+            - not traveler_archive_post_bearer.stat.exists
 
         - name: "Extracting Traveler from {{ traveler_archive }}"
           ansible.builtin.unarchive:
@@ -136,6 +140,11 @@
                 - secrets.installer_url_bearer != ''
               failed_when: false
 
+            - name: "Re-checking the Traveler FP archive after the Bearer download"
+              register: traveler_fp_archive_post_bearer
+              ansible.builtin.stat:
+                path: "{{ installer_dir }}/traveler/archives/{{ traveler_fixpack_archive }}"
+
             - name: "Downloading Traveler FP using basic auth from {{ installer_base_url }}"
               register: travelerfpresult
               until: "travelerfpresult is not failed"
@@ -148,8 +157,7 @@
                 username: "{{ installer_url_user }}"
                 password: "{{ secrets.installer_url_pass }}"
               when:
-                - not traveler_fp_installer_check.stat.exists
-                - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or travelerfpresult_bearer is failed)
+                - not traveler_fp_archive_post_bearer.stat.exists
 
             - name: "Extracting Traveler FP from {{ traveler_fixpack_archive }}"
               ansible.builtin.unarchive:

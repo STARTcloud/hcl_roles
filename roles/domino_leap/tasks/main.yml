@@ -45,6 +45,11 @@
             - secrets.installer_url_bearer != ''
           failed_when: false
 
+        - name: "Re-checking the Leap archive after the Bearer download"
+          register: leap_archive_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/leap/archives/{{ leap_archive }}"
+
         - name: "Downloading Leap using basic auth from {{ installer_base_url }}"
           register: leapresult
           until: "leapresult is not failed"
@@ -57,8 +62,7 @@
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
           when:
-            - not domino_server_installer_check.stat.exists
-            - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or leapresult_bearer is failed)
+            - not leap_archive_post_bearer.stat.exists
 
         - name: "Extracting Leap from {{ leap_archive }}"
           ansible.builtin.unarchive:
