@@ -49,6 +49,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the Domino Installer archive after the Bearer download"
+      register: domino_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+
     - name: "Downloading Domino using basic auth from {{ installer_base_url }}"
       register: domlsresult
       until: "domlsresult is not failed"
@@ -61,9 +66,8 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not domino_server_installer_check.stat.exists
+        - not domino_archive_post_bearer.stat.exists
         - not domino_server_installed.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or domlsresult_bearer is failed)
 
     - name: "Extracting Domino from {{ domino_server_installer_tar }}"
       when: not domino_server_installed.stat.exists
@@ -109,6 +113,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the Domino fixpack archive after the Bearer download"
+      register: fixpack_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_fixpack_tar }}"
+
     - name: "Downloading Domino Fixpack using basic auth from {{ installer_base_url }}"
       register: fplsresult
       until: "fplsresult is not failed"
@@ -121,11 +130,10 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not fixpack_archive.stat.exists
+        - not fixpack_archive_post_bearer.stat.exists
         - not fixpack_extracted.stat.exists
         - domino_installer_fixpack_install
         - not fixpack_installed.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or fplsresult_bearer is failed)
 
     - name: "Extracting Domino fixpack from {{ domino_server_fixpack_tar }}"
       when: domino_installer_fixpack_install and not fixpack_extracted.stat.exists and not fixpack_installed.stat.exists
@@ -171,6 +179,11 @@
         - secrets.installer_url_bearer != ''
       failed_when: false
 
+    - name: "Re-checking the Domino hotfix archive after the Bearer download"
+      register: hotfix_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_hotfix_tar }}"
+
     - name: "Downloading Domino hotfix using basic auth from {{ installer_base_url }}"
       register: hflsresult
       until: "hflsresult is not failed"
@@ -183,11 +196,10 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not hotfix_installer_check.stat.exists
+        - not hotfix_archive_post_bearer.stat.exists
         - not hotfix_extracted.stat.exists
         - domino_installer_hotfix_install
         - not hotfix_installed.stat.exists
-        - (secrets.installer_url_bearer is not defined or secrets.installer_url_bearer == '' or hflsresult_bearer is failed)
 
     - name: "Extracting Domino Hotfix from {{ domino_server_hotfix_tar }}"
       when: domino_installer_hotfix_install and not hotfix_extracted.stat.exists and not hotfix_installed.stat.exists
