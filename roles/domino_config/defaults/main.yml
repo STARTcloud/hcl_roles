@@ -2,6 +2,7 @@
 run_tasks: true
 show_help: true
 debug_autoconfigure: false
+domino_notesini_custom: {}
 domino_server_id: "server.id"
 domino_server_id_password: "null"
 use_domino_server_id: true
