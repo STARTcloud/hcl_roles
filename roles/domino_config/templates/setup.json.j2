@@ -25,7 +25,7 @@
 {% else %}
       "type": "first",
 {% endif %}
-      "name": "{{ domino_server_name_common }}",
+      "name": "{% if domino_countrycode is defined and domino_countrycode %}CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}{% else %}{{ domino_server_name_common }}{% endif %}",
       "domainName": "{{ domino_organization }}",
       "title": "{{ domino_server_name }}",
       "password": {{ domino_server_id_password }},
