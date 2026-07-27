@@ -275,7 +275,7 @@
         executable: /bin/sh
         creates: "{{ completed_dir }}/domsetup"
       with_items:
-        - "(su - {{ domino_user }} -c '{{ domino_install_basedir }}/bin/server -autoconf setup.json && touch {{ completed_dir }}/domsetup  > /dev/null 2>&1 &')"
+        - "(su {{ domino_user }} -c 'cd {{ domino_home_dir }} && {{ domino_install_basedir }}/bin/server -autoconf setup.json && touch {{ completed_dir }}/domsetup  > /dev/null 2>&1 &')"
 
     - name: "Waiting until the file autoconfigure.log is present before continuing"
       when: not domino_server_touched.stat.exists
