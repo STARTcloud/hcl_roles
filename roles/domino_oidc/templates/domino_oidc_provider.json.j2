@@ -22,10 +22,10 @@
                             "computeWithForm": false,
                             "items": {
                                 "Form": "DominoOIDCProvider",
-                                "OIDCP_DominoServers": ["CN={{ domino_server_name_common }}/O={{ domino_organization }}"],
-                                "DominoServers": "{{ domino_server_name_common }}/{{ domino_organization }}",
+                                "OIDCP_DominoServers": ["CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}"],
+                                "DominoServers": "{{ domino_server_name_common }}/{{ domino_organization }}{{ domino_country_suffix_abbr | default('') }}",
                                 "OIDCP_InternetSite": "{{ domino_oidc_install_proxy_url }}",
-                                "OIDCP_PrimaryDominoServer": ["CN={{ domino_server_name_common }}/O={{ domino_organization }}"]
+                                "OIDCP_PrimaryDominoServer": ["CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}"]
                             }
                         }
                     ]

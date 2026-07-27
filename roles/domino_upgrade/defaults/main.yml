@@ -39,6 +39,8 @@ domino_https_enabled: 1
 ots_generate_server_id_count: 0
 domino_organization: STARTcloud
 domino_countrycode:
+domino_country_suffix: "{{ '/C=' + domino_countrycode if domino_countrycode is defined and domino_countrycode else '' }}"
+domino_country_suffix_abbr: "{{ '/' + domino_countrycode if domino_countrycode is defined and domino_countrycode else '' }}"
 domino_install_port_forwards:
   - guest: 442
     url: "domino"

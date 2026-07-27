@@ -27,7 +27,7 @@
                                 "ISiteAdrs"                     : [ "{{ domino_traveler_proxy_url }}" ],
                                 "ISiteName"                     : "{{ settings.hostname }} Traveler",
                                 "ISiteOrg"                      : "{{ domino_organization }}",
-                                "WSHostingSrvrs"                : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+                                "WSHostingSrvrs"                : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}",
                                 "HTTP_TCP_Redirect"             : "1",
                                 "HTTP_SessionCookieSecure"      : "1",
                                 "HTTP_sessioncookieSamesite"    : "2",

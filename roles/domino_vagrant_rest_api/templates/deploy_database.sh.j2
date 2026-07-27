@@ -101,7 +101,7 @@ cat > /tmp/$JSON_NAME << EndOfMessage
 								"isPublicWriter": true
 							},
 							{
-								"name": "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}",
+								"name": "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}",
 								"level": "manager",
 								"type": "person",
 								"isPublicReader": true,

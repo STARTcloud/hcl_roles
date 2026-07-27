@@ -1,3 +1,4 @@
+{%- set domino_country_suffix = '/C=' ~ domino_countrycode if (domino_countrycode is defined and domino_countrycode) else '' -%}
 {
   "serverSetup": {
     "server": {
@@ -36,7 +37,7 @@
 {% if domino_use_proxy is defined and domino_use_proxy %}
       "httpTunnelProxy": "{{ proxy_server }}:{{ proxy_port }}",
 {% endif %}
-      "CN": "{{ origin_server }}.{{ domino_server_domain }}/O={{ domino_organization }}",
+      "CN": "{{ origin_server }}.{{ domino_server_domain }}/O={{ domino_organization }}{{ domino_country_suffix }}",
       "hostNameOrIP": "{{ origin_server_ip }}"
     },
 {% endif %}
@@ -46,7 +47,7 @@
       "enablePortCompression": true
     },
     "org": {
-      "countryCode": null,
+      "countryCode": {% if domino_countrycode is defined and domino_countrycode %}"{{ domino_countrycode }}"{% else %}null{% endif %},
       "orgName": "{{ domino_organization }}",
       "certifierPassword": "{{ domino_certifier_id_password }}",
       "orgUnitName": null,
@@ -203,7 +204,7 @@
             "action": "update",
             "findDocument": {
               "Type": "Server",
-              "ServerName": "CN={{ domino_server_name_common }}/O={{ domino_organization }}"
+              "ServerName": "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}"
             },
             "computeWithForm": true,
             "items": {
@@ -212,37 +213,37 @@
               "FullAdmin": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "CreateAccess": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "ReplicaAccess": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "UnrestrictedList": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "OnBehalfOfInvokerLst": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "LibsLst": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
               "RestrictedList": [
                 "LocalDomainAdmins",
                 "AutomaticallyCrossCertifiedUsers",
-                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}"
+                "CN={{ domino_admin_user_first_name }} {{ domino_admin_user_last_name }}/O={{ domino_organization }}{{ domino_country_suffix }}"
               ],
 {% else %}
               "FullAdmin": [
@@ -322,7 +323,7 @@
               "CmdLine": "Genesis",
               "Enabled": "2",
               "Program": "runjava",
-              "Source": "CN={{ domino_server_name_common }}/O={{ domino_organization }}"
+              "Source": "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}"
             }
           },
 {% if not is_additional_server %}
@@ -363,8 +364,8 @@
               "Form": "local",
               "Type": "Connection",
               "PortName": "TCPIP",
-              "Source": "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
-              "Destination": "CN={{ origin_server }}.{{ domino_server_domain }}/O={{ domino_organization }}",
+              "Source": "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}",
+              "Destination": "CN={{ origin_server }}.{{ domino_server_domain }}/O={{ domino_organization }}{{ domino_country_suffix }}",
               "SourceDomain": "{{ domino_organization }}",
               "DestinationDomain": "{{ domino_organization }}",
               "ConnectionMode": "0",
@@ -398,7 +399,7 @@
               "ISiteOrg": "{{ domino_organization }}",
               "ISiteName": "{{ settings.hostname }} Default Site",
               "WSIsDflt": "1",
-              "WSHostingSrvrs" : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+              "WSHostingSrvrs" : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}",
               "TCPAnonymous"   : "0",
               "TCPNameAndPwd"  : "0",
               "SSLAnonymous"   : "0",
@@ -437,7 +438,7 @@
               "ISiteName"          : "{{ settings.hostname }} Domino Web Apps",
 {% endif %}
               "ISiteAdrs"          : [ "{{ domino_install_proxy_url }}", "{{ settings.hostname }}.{{ settings.domain }}" ],
-              "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+              "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}",
               "HTTP_TCP_Redirect"  : "1",
               "HTTP_SessionCookieSecure" : "1",
               "HTTP_sessioncookieSamesite" : "2",
@@ -470,7 +471,7 @@
               "WSHomeURL"          : "",
               "ISiteName"          : "{{ settings.hostname }} Agents API",
               "ISiteAdrs"          : [ "api.{{ settings.hostname }}.{{ settings.domain }}" ],
-              "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+              "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix }}",
               "HTTP_TCP_Redirect"  : "1",
               "HTTP_SessionCookieSecure" : "1",
               "HTTP_sessioncookieSamesite" : "2",

@@ -28,7 +28,7 @@
               					"ISiteAdrs"                  : [ "{{ domino_leap_proxy_url }}" ],
               					"ISiteName"                  : "{{ settings.hostname }} Domino Leap",
               					"ISiteOrg"                   : "{{ domino_organization }}",
-              					"WSHostingSrvrs"             : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+              					"WSHostingSrvrs"             : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}",
               					"HTTPEnableMethods"          : [ "1", "2", "3", "4", "6", "7" ],
               					"HTTP_TCP_Redirect"          : "1",
               					"HTTP_SessionCookieSecure"   : "1",

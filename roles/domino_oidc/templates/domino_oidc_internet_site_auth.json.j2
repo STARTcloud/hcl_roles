@@ -27,7 +27,7 @@
                                 "ISiteAdrs"          : [ "{{ domino_oidc_install_proxy_url }}" ],
                                 "ISiteName"          : "{{ settings.hostname }} Domino OIDC Provider",
                                 "ISiteOrg"           : "{{ domino_organization }}",
-                                "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}",
+                                "WSHostingSrvrs"     : "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}",
                                 "WSDominoOIDCProvider" : "{{ domino_oidc_install_proxy_url }}",
                                 "HTTP_TCP_Redirect"  : "1",
                                 "HTTP_SessionCookieSecure" : "1",
