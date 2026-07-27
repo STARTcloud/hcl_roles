@@ -316,3 +316,21 @@
           $$TEST_JWTIDVAULT=1
 
       when: domino_major_version == 14
+
+    - name: "Append Ports=TCPIP to notes.ini so One Touch Setup required replicas can connect by server name"
+      ansible.builtin.lineinfile:
+        path: "{{ domino_home_dir }}/notes.ini"
+        regexp: "^Ports="
+        line: "Ports=TCPIP"
+        insertafter: EOF
+        state: present
+      when: is_additional_server
+
+    - name: "Append TCPIP port definition to notes.ini so One Touch Setup required replicas can connect by server name"
+      ansible.builtin.lineinfile:
+        path: "{{ domino_home_dir }}/notes.ini"
+        regexp: "^TCPIP="
+        line: "TCPIP=TCP, 0, 15, 0"
+        insertafter: EOF
+        state: present
+      when: is_additional_server
