@@ -7,7 +7,7 @@
 
     - name: "Creating Installation Directories"
       ansible.builtin.file:
-        mode: "0644"
+        mode: "0755"
         path: "{{ item }}"
         state: directory
         owner: "{{ service_user }}"
@@ -15,10 +15,12 @@
         - "{{ installer_dir }}/restapi/rest"
         - "{{ installer_dir }}/restapi/archives"
 
-    - name: "Checking if the Rest Interface deployed"
+    # Keyed on the versioned jar so bumping rest_vagrant_crud_version redeploys
+    # without any hand-cleaning of markers or stale artifacts.
+    - name: "Checking if REST Interface {{ rest_interface_jar }} is deployed"
       register: rest_interface_deployed
       ansible.builtin.stat:
-        path: "{{ rest_app_home_dir }}/environment"
+        path: "{{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}"
         checksum_algorithm: sha256
 
     - name: "Downloading Domino VagrantCRUD API {{ rest_vagrant_crud_version }}"
@@ -29,15 +31,15 @@
       ansible.builtin.get_url:
         mode: "0644"
         url: "{{ rest_vagrant_crud_git_repo }}{{ rest_vagrant_crud_version }}/{{ rest_vagrant_crud_archive }}"
-        dest: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_archive }}"
+        dest: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"
 
-    - name: "Extracting Domino VagrantCRUD API from {{ rest_vagrant_crud_archive }}"
+    - name: "Extracting Domino VagrantCRUD API from {{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"
       when: not rest_interface_deployed.stat.exists
       ansible.builtin.unarchive:
-        src: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_archive }}"
+        src: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"
         dest: "{{ installer_dir }}/restapi/rest"
         remote_src: true
-        creates: "{{ installer_dir }}/restapi/rest/*.jar"
+        creates: "{{ installer_dir }}/restapi/rest/{{ rest_interface_jar }}"
 
     - name: "Making Rest Libraries and Binaries executable"
       when: not rest_interface_deployed.stat.exists
@@ -63,7 +65,7 @@
         path: "{{ item.path }}"
         state: directory
         owner: "{{ service_user }}"
-        mode: "0744"
+        mode: "0755"
       with_items:
         - { path: "/opt/domino/scripts" }
         - { path: "{{ rest_app_home_dir }}" }
@@ -74,6 +76,7 @@
     - name: "Copying default REST Interface JAR to working path"
       become: true
       when: not rest_interface_deployed.stat.exists and not use_custom_rest_interface_jar
+      notify: "Restart restapi"
       ansible.builtin.copy:
         src: "{{ installer_dir }}/restapi/rest/{{ rest_interface_jar }}"
         dest: "{{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}"
@@ -84,6 +87,7 @@
     - name: "Copying custom REST Interface JAR to working path"
       become: true
       when: not rest_interface_deployed.stat.exists and use_custom_rest_interface_jar
+      notify: "Restart restapi"
       ansible.builtin.copy:
         src: "{{ installer_dir }}/custom_restapi_jar/{{ rest_interface_jar }}"
         dest: "{{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}"
@@ -108,6 +112,7 @@
     - name: "Placing Configuration and scripts"
       become: true
       when: not rest_interface_deployed.stat.exists
+      notify: "Restart restapi"
       ansible.builtin.template:
         owner: "{{ item.owner }}"
         src: "{{ item.src }}"
@@ -134,6 +139,11 @@
         owner: root
         group: root
         mode: "0644"
+
+    # Run the notified restart NOW (not at end of play) so the port check
+    # below validates the jar this run deployed, not a leftover process.
+    - name: "Flushing handlers so restapi restarts before the port check"
+      ansible.builtin.meta: flush_handlers
 
     - name: "Starting Vagrant CRUD Rest API"
       when: not rest_interface_deployed.stat.exists and not ansible_module_running_in_container

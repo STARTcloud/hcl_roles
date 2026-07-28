@@ -1,0 +1,11 @@
+---
+# Fired by the jar copy and config/unit template tasks. daemon_reload is
+# required because restapi.service's ExecStart embeds the versioned jar name —
+# without it systemd keeps starting the cached unit's old jar.
+- name: "Restart restapi"
+  when: not ansible_module_running_in_container
+  ansible.builtin.systemd:
+    name: restapi
+    state: restarted
+    enabled: true
+    daemon_reload: true
