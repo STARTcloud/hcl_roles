@@ -36,13 +36,18 @@ nomad_client_config:
   id_token_signed_response_alg: "ES256"
   access_token_signed_response_alg: "ES256"
 
+# Names of every role this deployment runs, derived from the provision_roles list
+# the core_provisioner driver passes to every play. Roles gated run_tasks: false are
+# excluded, so entries track what is actually enabled. Overridable from Hosts.yml.
+enabled_roles: "{{ ((provision_roles | default([]) | selectattr('vars.run_tasks', 'undefined') | list) + (provision_roles | default([]) | selectattr('vars.run_tasks', 'defined') | selectattr('vars.run_tasks') | list)) | map(attribute='name') | list }}"
+
 nomad_app_switcher_enabled_services:
   - WelcomePage
   - ServerConsole
   - DominoWeb
   - Guacamole
-  - "{{ 'RestAPI' if 'startcloud.hcl_roles.domino_rest_api' in (enabled_roles | map(attribute='name') | list) else '' }}"
-  - "{{ 'Sametime' if 'startcloud.hcl_roles.domino_sametime' in (enabled_roles | map(attribute='name') | list) else '' }}"
-  - "{{ 'Traveler' if 'startcloud.hcl_roles.domino_traveler' in (enabled_roles | map(attribute='name') | list) else '' }}"
-  - "{{ 'Leap' if 'startcloud.hcl_roles.domino_leap' in (enabled_roles | map(attribute='name') | list) else '' }}"
-  - "{{ 'Verse' if 'startcloud.hcl_roles.domino_verse' in (enabled_roles | map(attribute='name') | list) else '' }}"
+  - "{{ 'RestAPI' if 'startcloud.hcl_roles.domino_rest_api' in enabled_roles else '' }}"
+  - "{{ 'Sametime' if 'startcloud.hcl_roles.domino_sametime' in enabled_roles else '' }}"
+  - "{{ 'Traveler' if 'startcloud.hcl_roles.domino_traveler' in enabled_roles else '' }}"
+  - "{{ 'Leap' if 'startcloud.hcl_roles.domino_leap' in enabled_roles else '' }}"
+  - "{{ 'Verse' if 'startcloud.hcl_roles.domino_verse' in enabled_roles else '' }}"

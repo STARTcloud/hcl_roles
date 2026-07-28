@@ -2,15 +2,20 @@
 run_tasks: true
 domino_oidc_debug: false
 
-domino_oidc_provider_enabled: "{{ 'startcloud.hcl_roles.domino_oidc' in (enabled_roles | default([])) }}"
+# Names of every role this deployment runs, derived from the provision_roles list
+# the core_provisioner driver passes to every play. Roles gated run_tasks: false are
+# excluded, so the flags below track what is actually enabled. Overridable from Hosts.yml.
+enabled_roles: "{{ ((provision_roles | default([]) | selectattr('vars.run_tasks', 'undefined') | list) + (provision_roles | default([]) | selectattr('vars.run_tasks', 'defined') | selectattr('vars.run_tasks') | list)) | map(attribute='name') | list }}"
+
+domino_oidc_provider_enabled: "{{ 'startcloud.hcl_roles.domino_oidc' in enabled_roles }}"
 
 domino_oidc_provider_federation_enabled: true
 
 domino_oidc_provider_web_enabled: true
 
-domino_oidc_provider_nomad_enabled: "{{ 'startcloud.hcl_roles.domino_nomadweb' in (enabled_roles | default([])) }}"
-domino_oidc_provider_verse_enabled: "{{ 'startcloud.hcl_roles.domino_verse' in (enabled_roles | default([])) }}"
-domino_oidc_provider_leap_enabled: "{{ 'startcloud.hcl_roles.domino_leap' in (enabled_roles | default([])) }}"
+domino_oidc_provider_nomad_enabled: "{{ 'startcloud.hcl_roles.domino_nomadweb' in enabled_roles }}"
+domino_oidc_provider_verse_enabled: "{{ 'startcloud.hcl_roles.domino_verse' in enabled_roles }}"
+domino_oidc_provider_leap_enabled: "{{ 'startcloud.hcl_roles.domino_leap' in enabled_roles }}"
 
 domino_oidc_web_apps_use_unified_registered_client: true
 
