@@ -8,8 +8,19 @@
         path: "/id-files/user-safe-ids/{{ user_safe_id }}"
         checksum_algorithm: sha256
 
+    - name: "Checking which org safe IDs are available at /id-files/org-safe-ids"
+      register: org_safe_ids_check
+      ansible.builtin.stat:
+        path: "/id-files/org-safe-ids/{{ item }}"
+        checksum_algorithm: sha256
+      loop: "{{ org_safe_ids }}"
+
+    - name: "Recording org safe IDs present on disk, additional servers skip these because cross certificates replicate from the origin"
+      ansible.builtin.set_fact:
+        org_safe_ids_present: "{{ (org_safe_ids_check.results | selectattr('stat.exists') | map(attribute='item') | list) if not (is_additional_server | default(false)) else [] }}"
+
     - name: "Running Cross Certification"
-      when: cross_certify_check.stat.exists
+      when: cross_certify_check.stat.exists or org_safe_ids_present | length > 0
       block:
         - name: "Starting Domino for Changes to take effect"
           become: true
@@ -37,6 +48,7 @@
           become_user: "{{ service_user }}"
           become: true
           register: cross_certify_commands
+          when: cross_certify_check.stat.exists
           ansible.builtin.shell: >
             source {{ service_home_dir }}/.sdkman/bin/sdkman-init.sh &&
             source {{ service_home_dir }}/.bashrc &&
@@ -50,16 +62,43 @@
           changed_when: false
 
         - name: "Waiting until the Cross Certification JAR writes to CrossCertifyNotesID.out"
+          when: cross_certify_check.stat.exists
           ansible.builtin.wait_for:
             path: "{{ completed_dir }}/CrossCertifyNotesID.out"
 
         - name: "Outputting available Help Text"
+          when: cross_certify_check.stat.exists
           ansible.builtin.debug:
             var: cross_certify_commands.stdout_lines
+
+        - name: "Cross Certifying org safe ID /id-files/org-safe-ids/{{ org_safe_id_file }}"
+          become_user: "{{ service_user }}"
+          become: true
+          register: org_cross_certify_commands
+          ansible.builtin.shell: >
+            source {{ service_home_dir }}/.sdkman/bin/sdkman-init.sh &&
+            source {{ service_home_dir }}/.bashrc &&
+            source {{ service_home_dir }}/.bash_profile &&
+            $JAVA_HOME/bin/java
+            -Dapp.properties.file={{ service_home_dir }}/CrossCertifyNotesID.properties
+            -jar CrossCertifyNotesID.jar /id-files/org-safe-ids/{{ org_safe_id_file }}
+          args:
+            executable: /bin/bash
+            chdir: "{{ service_home_dir }}"
+          changed_when: false
+          loop: "{{ org_safe_ids_present }}"
+          loop_control:
+            loop_var: org_safe_id_file
+
+        - name: "Outputting org cross certification results"
+          when: org_safe_ids_present | length > 0
+          ansible.builtin.debug:
+            msg: "{{ org_cross_certify_commands.results | map(attribute='stdout_lines') | list }}"
 
         - name: "Adding Admin notes ID to the ID Vault"
           become: true
           become_user: "{{ service_user }}"
+          when: cross_certify_check.stat.exists
           ansible.builtin.expect:
             chdir: "{{ service_home_dir }}"
             command: >
@@ -76,6 +115,7 @@
         - name: "Running Check database to populate IDs into ID Vault"
           become: true
           become_user: "{{ service_user }}"
+          when: cross_certify_check.stat.exists
           ansible.builtin.expect:
             chdir: "{{ service_home_dir }}"
             command: >
