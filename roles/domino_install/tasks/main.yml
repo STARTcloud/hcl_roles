@@ -343,3 +343,12 @@
         insertafter: EOF
         state: present
       when: is_additional_server
+
+    - name: "Append ServerKeyFileName so One Touch Setup has its server identity on first boot, without it the required certstore replica fails with a false 'server is not responding'"
+      ansible.builtin.lineinfile:
+        path: "{{ domino_home_dir }}/notes.ini"
+        regexp: "^ServerKeyFileName="
+        line: "ServerKeyFileName={{ domino_home_dir }}/{{ domino_server_id }}"
+        insertafter: EOF
+        state: present
+      when: is_additional_server
