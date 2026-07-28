@@ -282,13 +282,18 @@
       ansible.builtin.wait_for:
         path: "{{ domino_home_dir }}/IBM_TECHNICAL_SUPPORT/autoconfigure.log"
 
-    - name: "Waiting for 'Application configuration completed successfully' in Autoconfigure"
+    - name: "Waiting for One Touch Setup to succeed or report an error in Autoconfigure"
       when: not domino_server_touched.stat.exists
       ansible.builtin.wait_for:
         path: "{{ domino_home_dir }}/IBM_TECHNICAL_SUPPORT/autoconfigure.log"
-        search_regex: "Application configuration completed successfully"
+        search_regex: "(Application configuration completed successfully)|(AutoConfiguration error)"
         state: present
         timeout: 600
+
+    - name: "Failing fast because One Touch Setup reported an AutoConfiguration error"
+      when: not domino_server_touched.stat.exists
+      ansible.builtin.command: "grep -q 'Application configuration completed successfully' {{ domino_home_dir }}/IBM_TECHNICAL_SUPPORT/autoconfigure.log"
+      changed_when: false
 
     - name: "Capturing autoconfigure log output"
       ansible.builtin.command: "cat {{ domino_home_dir }}/IBM_TECHNICAL_SUPPORT/autoconfigure.log"
