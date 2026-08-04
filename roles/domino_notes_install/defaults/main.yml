@@ -1,11 +1,6 @@
 ---
 run_tasks: true
 
-# Progress reporting
-count_progress: true
-progress_units: 1
-progress_role_description: "Installing HCL Notes"
-
 # Notes Client Version Settings
 notes_major_version: "14"
 notes_minor_version: "5"
