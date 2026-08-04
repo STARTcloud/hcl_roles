@@ -1,6 +1,11 @@
 ---
 run_tasks: true
 
+# Progress reporting
+count_progress: true
+progress_units: 1
+progress_role_description: "Installing HCL Notes"
+
 # Notes Client Version Settings
 notes_major_version: "14"
 notes_minor_version: "5"
@@ -11,8 +16,8 @@ notes_hotfix_version: "SHF20"
 # Installation Type (client_only or admin_designer)
 notes_installation_type: "client_only"
 
-# notes.ini InstallType value (2 = AllClient: Notes+Designer+Admin, 6 = Notes client only)
-notes_install_type: "2"
+# notes.ini InstallType value derived from installer package (6 = Notes client only, 2 = AllClient: Notes+Designer+Admin)
+notes_install_type: "{{ '6' if notes_installation_type == 'client_only' else '2' }}"
 
 # Installer File Names
 client_only_notes_installer_exe: "Notes_14.5_Win64_English.exe"
@@ -37,9 +42,19 @@ notes_unpack_dir: "C:\\temp\\notes_unpack"
 # Ram Disk
 notes_use_ramdisk: false
 notes_ramdisk_path: "R"
-notes_ramdisk_size: "700m"
+notes_ramdisk_size_mb: 700
+notes_ramdisk_size: "{{ notes_ramdisk_size_mb }}m"
 notes_ramdisk_label: "Marvel"
 notes_ramdisk_filesystem: "NTFS"
+
+# Persistent startup disk definition read at boot by the SPVVEngine driver from
+# HKLM\SYSTEM\CurrentControlSet\Services\SPVVEngine\Options\Auto\<letter>:
+# MountFlags 0x180c = At Startup + Dynamic memory allocation + TRIM
+notes_ramdisk_mount_flags: "0x180c"
+# FileSystem registry code: 3 = NTFS (only verified value)
+notes_ramdisk_filesystem_code: 3
+# Folder tree the driver recreates on the empty disk at every boot-mount
+notes_ramdisk_initial_folders: "\\HCL\\Notes\\Data"
 
 # Multi-user Installation Settings
 notes_multiuser_enabled: true

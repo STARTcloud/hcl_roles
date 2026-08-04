@@ -155,21 +155,43 @@
 - name: "Creating temporary Multi User Data Dir drive"
   when: notes_multiuser_enabled
   ansible.windows.win_command:
-    cmd: "\"C:\\Program Files\\SoftPerfect RAM Disk\\ramdiskc.exe\" /add:{{ notes_multiuser_base_dir }}
-      /fs:{{ notes_ramdisk_filesystem }} /size:{{ notes_ramdisk_size }} /label:{{ notes_ramdisk_label }}"
+    argv:
+      - "C:\\Program Files\\SoftPerfect RAM Disk\\ramdiskctl.exe"
+      - create
+      - --size
+      - "{{ notes_ramdisk_size }}"
+      - --fs
+      - "{{ notes_ramdisk_filesystem | lower }}"
+      - --letter
+      - "{{ notes_multiuser_base_dir }}"
+      - --volume-label
+      - "{{ notes_ramdisk_label }}"
   register: tempdisk_create_result
 
 - name: "Installing Notes with multi-user configuration and MST transform"
-  when: notes_include_transform
+  when:
+    - notes_multiuser_enabled
+    - notes_include_transform
   ansible.windows.win_command:
     cmd: "setup.exe /s /v\"SETMULTIUSER=1 CITRIX=1 MULTIUSERBASEDIR={{ notes_multiuser_base_dir }}:\\ /L*v C:\\temp\\verbose.log MULTIUSERCOMMONDIR={{ notes_multiuser_common_dir }}\\ /qb+\""
     chdir: "{{ notes_unpack_dir }}"
   register: notes_install_result
 
 - name: "Installing Notes with multi-user configuration"
-  when: not notes_include_transform
+  when:
+    - notes_multiuser_enabled
+    - not notes_include_transform
   ansible.windows.win_command:
     cmd: "setup.exe /s /v\"SETMULTIUSER=1 CITRIX=1 MULTIUSERBASEDIR={{ notes_multiuser_base_dir }}:\\ /L*v C:\\temp\\verbose.log MULTIUSERCOMMONDIR={{ notes_multiuser_common_dir }}\\ /qb+\""
+    chdir: "{{ notes_unpack_dir }}"
+  register: notes_install_result
+
+# Panagenda/Doug method: plain single-user install to default locations; per-user
+# separation comes from the Data junction onto the RAM disk plus MarvelClient roaming.
+- name: "Installing Notes (single-user, default locations)"
+  when: not notes_multiuser_enabled
+  ansible.windows.win_command:
+    cmd: "setup.exe /s /v\"/L*v C:\\temp\\verbose.log /qb+\""
     chdir: "{{ notes_unpack_dir }}"
   register: notes_install_result
 
@@ -215,14 +237,30 @@
 #    cmd: "\"C:\\Program Files\\SoftPerfect RAM Disk\\ramdiskc.exe\" /del:{{ notes_multiuser_base_dir }} /force"
 #  register: ramdisk_delete_result
 
-# -
-#  name: "Creating Persistant Ram Disk"
-#  when: notes_use_ramdisk
-#  ansible.windows.win_command:
-#    cmd: '"C:\Program Files\SoftPerfect RAM Disk\ramdisk.exe" /add:"letter={{ notes_ramdisk_path }},
-#      fs={{ notes_ramdisk_filesystem }}, size={{ notes_ramdisk_size }}, label={{ notes_ramdisk_label }}"'
-#  register: ramdisk_create_result
-#  ignore_errors: true
+# Persistent startup RAM disk: the SPVVEngine boot-start driver mounts every disk
+# defined under Options\Auto\<letter>: before any user logs in. Survives sysprep
+# (SYSTEM hive is preserved). Replaces the deprecated ramdisk.exe /add: CLI, which
+# no longer writes the saved configuration in current SoftPerfect releases.
+- name: "Defining persistent startup Ram Disk in SPVVEngine driver registry"
+  when: notes_use_ramdisk
+  ansible.windows.win_powershell:
+    script: |
+      $key = 'HKLM:\SYSTEM\CurrentControlSet\Services\SPVVEngine\Options\Auto\{{ notes_ramdisk_path }}:'
+      New-Item -Path $key -Force | Out-Null
+      New-ItemProperty -Path $key -Name MountFlags -PropertyType DWord -Value {{ notes_ramdisk_mount_flags }} -Force | Out-Null
+      New-ItemProperty -Path $key -Name NumaNodeIndex -PropertyType DWord -Value 0 -Force | Out-Null
+      New-ItemProperty -Path $key -Name Properties -PropertyType DWord -Value 0 -Force | Out-Null
+      New-ItemProperty -Path $key -Name FileSystem -PropertyType DWord -Value {{ notes_ramdisk_filesystem_code }} -Force | Out-Null
+      New-ItemProperty -Path $key -Name AutoflushFlags -PropertyType DWord -Value 0 -Force | Out-Null
+      New-ItemProperty -Path $key -Name AutoflushPeriod -PropertyType DWord -Value 0 -Force | Out-Null
+      New-ItemProperty -Path $key -Name VolumeSize -PropertyType QWord -Value ({{ notes_ramdisk_size_mb }} * 1MB) -Force | Out-Null
+      $label = [System.Text.Encoding]::ASCII.GetBytes('{{ notes_ramdisk_label }}')
+      New-ItemProperty -Path $key -Name VolumeLabel -PropertyType Binary -Value $label -Force | Out-Null
+      # uint16 byte-length prefix followed by the path in UTF-16LE
+      $folders = '{{ notes_ramdisk_initial_folders }}'
+      $bytes = [System.BitConverter]::GetBytes([uint16]($folders.Length * 2)) + [System.Text.Encoding]::Unicode.GetBytes($folders)
+      New-ItemProperty -Path $key -Name InitialFolders -PropertyType Binary -Value $bytes -Force | Out-Null
+  register: ramdisk_create_result
 
 - name: "Verifying Notes installation"
   ansible.windows.win_stat:
@@ -233,6 +271,42 @@
   ansible.builtin.fail:
     msg: "Notes installation failed - notes.exe not found at {{ notes_exe_path }}"
   when: not notes_verification.stat.exists
+
+# Single-user + RAM disk: stash the installer's Data folder, junction Data onto the
+# RAM disk (SPVVEngine InitialFolders recreates the target tree every boot), and drop
+# a common-Startup-folder script that repopulates the stub data at each user login.
+- name: "Configuring Notes Data junction onto RAM disk"
+  when:
+    - not notes_multiuser_enabled
+    - notes_use_ramdisk
+  block:
+    - name: "Checking if installer Data folder was already relocated"
+      register: notes_data_orig_check
+      ansible.windows.win_stat:
+        path: "{{ notes_install_dir }}\\Data_orig"
+
+    - name: "Relocating installer Data folder to Data_orig"
+      when: not notes_data_orig_check.stat.exists
+      ansible.windows.win_powershell:
+        script: |
+          Move-Item -LiteralPath '{{ notes_install_dir }}\Data' -Destination '{{ notes_install_dir }}\Data_orig'
+
+    - name: "Checking if Data junction exists"
+      register: notes_data_junction_check
+      ansible.windows.win_stat:
+        path: "{{ notes_install_dir }}\\Data"
+
+    - name: "Creating Data junction to RAM disk"
+      when: not notes_data_junction_check.stat.exists
+      ansible.windows.win_command:
+        cmd: "cmd.exe /c mklink /J \"{{ notes_install_dir }}\\Data\" \"{{ notes_ramdisk_path }}:\\HCL\\Notes\\Data\""
+
+    - name: "Installing Startup folder script to populate RAM disk Notes data at login"
+      ansible.windows.win_copy:
+        dest: "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp\\notes_ramdisk_data.bat"
+        content: |
+          @echo off
+          xcopy "{{ notes_install_dir }}\Data_orig" "{{ notes_ramdisk_path }}:\HCL\Notes\Data\" /E /I /Y
 
 - name: "Cleaning up unpacked installer files"
   ansible.windows.win_file:
@@ -287,14 +361,47 @@
     url_password: "{{ installer_url_pass }}"
     validate_certs: false
 
+# Single-user stub notes.ini in the program dir (Panagenda/Doug method). Written to
+# notes.ini for use and stubnotes.ini as the pristine copy for any future restore.
+# Must never be mutated by launching Notes on the template image.
+- name: "Configuring stub notes.ini for Marvel Client (single-user)"
+  when:
+    - not notes_multiuser_enabled
+    - notes_enable_marvel_client
+  ansible.windows.win_copy:
+    dest: "{{ notes_install_dir }}\\{{ item }}"
+    content: |
+      [Notes]
+      KitType=1
+      InstallType={{ notes_install_type }}
+      InstallMode=1
+      NotesProgram={{ notes_install_dir }}\
+      Directory={{ notes_install_dir }}\Data
+      EXTMGR_ADDINS={{ marvel_client_dll }}
+      MC_NetworkDirectory={{ notes_marvel_client_network_directory }}
+      MC_AllowSyncDuringSetup={{ notes_marvel_client_allow_sync_during_setup }}
+      MC_AllowSyncDuringSetup_FixPrompt={{ notes_marvel_client_allow_sync_during_setup_fixprompt }}
+      MC_DB={{ notes_marvel_client_db }}
+      MC_DB_Notresolvable={{ notes_marvel_client_db_notresolvable }}
+      MC_DB_Unavailable={{ notes_marvel_client_db_unavailable }}
+      MC_SupportIDVault={{ notes_marvel_client_support_idvault }}
+      DISABLE_WORKSPACE_ROAMING={{ notes_disable_workspace_roaming }}
+  loop:
+    - "notes.ini"
+    - "stubnotes.ini"
+
 - name: "Creating shared data directory for Marvel Client"
-  when: notes_enable_marvel_client
+  when:
+    - notes_multiuser_enabled
+    - notes_enable_marvel_client
   ansible.windows.win_file:
     path: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\Shared"
     state: directory
 
 - name: "Configuring shared notes.ini for Marvel Client"
-  when: notes_enable_marvel_client
+  when:
+    - notes_multiuser_enabled
+    - notes_enable_marvel_client
   ansible.windows.win_copy:
     dest: "{{ notes_multiuser_common_dir }}\\HCL\\Notes\\Data\\notes.ini"
     content: |
@@ -327,7 +434,9 @@
       MC_Msg_Suppress_0d4e={{ notes_marvel_client_msg_suppress_setup_complete }}
 
 - name: "Implementing Justins Hacks, which are not proper"
-  when: notes_14_admin_hack_for_multiuser_single_client
+  when:
+    - notes_multiuser_enabled
+    - notes_14_admin_hack_for_multiuser_single_client
   block:
     - name: "Downloading DomAdmin.ntf using Bearer token"
       register: domadmin_bearer
