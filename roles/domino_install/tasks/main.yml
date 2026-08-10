@@ -35,6 +35,9 @@
 
     - name: "Downloading Domino using Bearer token from {{ installer_base_url }}"
       register: domlsresult_bearer
+      until: "domlsresult_bearer is not failed"
+      retries: 3
+      ignore_errors: true
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
@@ -47,10 +50,73 @@
         - not domino_server_installed.stat.exists
         - secrets.installer_url_bearer is defined
         - secrets.installer_url_bearer != ''
-      failed_when: false
 
     - name: "Re-checking the Domino Installer archive after the Bearer download"
       register: domino_archive_post_bearer
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+
+    - name: "Validating the Domino installer archive lists as a tar"
+      when:
+        - domino_archive_post_bearer.stat.exists
+        - not domino_server_installed.stat.exists
+      register: domino_archive_listing
+      ansible.builtin.shell: tar -tf "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}" > /dev/null
+      changed_when: false
+      failed_when: false
+
+    - name: "Removing the corrupt Domino installer archive so a fresh download replaces it"
+      when:
+        - domino_archive_post_bearer.stat.exists
+        - not domino_server_installed.stat.exists
+        - (domino_archive_listing.rc | default(0)) != 0
+      ansible.builtin.file:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+        state: absent
+
+    - name: "Re-checking the Domino Installer archive after validation"
+      register: domino_archive_post_validation
+      ansible.builtin.stat:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+
+    - name: "Redownloading Domino using Bearer token after a failed validation"
+      register: domlsresult_bearer_retry
+      until: "domlsresult_bearer_retry is not failed"
+      retries: 3
+      ignore_errors: true
+      ansible.builtin.get_url:
+        mode: "0755"
+        validate_certs: false
+        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_installer_tar }}"
+        dest: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+        headers:
+          Authorization: "Bearer {{ secrets.installer_url_bearer }}"
+      when:
+        - not domino_archive_post_validation.stat.exists
+        - not domino_server_installed.stat.exists
+        - secrets.installer_url_bearer is defined
+        - secrets.installer_url_bearer != ''
+
+    - name: "Validating the redownloaded Domino installer archive lists as a tar"
+      when:
+        - not domino_server_installed.stat.exists
+        - domlsresult_bearer_retry is not skipped
+      register: domino_archive_relisting
+      ansible.builtin.shell: tar -tf "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}" > /dev/null
+      changed_when: false
+      failed_when: false
+
+    - name: "Removing the corrupt redownloaded Domino installer archive so the fallback can take over"
+      when:
+        - not domino_server_installed.stat.exists
+        - domlsresult_bearer_retry is not skipped
+        - (domino_archive_relisting.rc | default(0)) != 0
+      ansible.builtin.file:
+        path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
+        state: absent
+
+    - name: "Re-checking the Domino Installer archive before the basic auth fallback"
+      register: domino_archive_pre_fallback
       ansible.builtin.stat:
         path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
 
@@ -66,7 +132,7 @@
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
       when:
-        - not domino_archive_post_bearer.stat.exists
+        - not domino_archive_pre_fallback.stat.exists
         - not domino_server_installed.stat.exists
 
     - name: "Extracting Domino from {{ domino_server_installer_tar }}"
