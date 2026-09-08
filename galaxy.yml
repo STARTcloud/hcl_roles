@@ -1,7 +1,7 @@
 ---
 namespace: startcloud
 name: hcl_roles
-version: 0.1.0 # x-release-please-version
+version: 0.2.0 # x-release-please-version
 readme: "README.md"
 repository: https://github.com/STARTcloud/hcl_roles
 documentation: https://github.com/STARTcloud/hcl_roles
