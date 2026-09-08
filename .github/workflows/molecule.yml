@@ -33,7 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        role: []
+        role:
+          - domino_vagrant_readme
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

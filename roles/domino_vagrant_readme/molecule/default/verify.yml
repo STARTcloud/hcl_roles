@@ -1,0 +1,51 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    expected_domino_home_dir: /local/notesdata
+    expected_domino_install_basedir: /opt/hcl/domino
+    expected_service_home_dir: /home/startcloud
+  tasks:
+    - name: "Stat the rendered help file"
+      ansible.builtin.stat:
+        path: /tmp/CommandHelp.txt
+      register: command_help
+
+    - name: "Assert the help file was rendered as a 0644 regular file"
+      ansible.builtin.assert:
+        that:
+          - command_help.stat.exists
+          - command_help.stat.isreg
+          - command_help.stat.mode == '0644'
+        fail_msg: >-
+          /tmp/CommandHelp.txt missing or wrong type/mode
+          (exists={{ command_help.stat.exists }},
+          mode={{ command_help.stat.mode | default('n/a') }})
+
+    - name: "Read the rendered help file"
+      ansible.builtin.slurp:
+        src: /tmp/CommandHelp.txt
+      register: command_help_raw
+
+    - name: "Decode the rendered help file"
+      ansible.builtin.set_fact:
+        command_help_body: "{{ command_help_raw.content | b64decode }}"
+
+    - name: "Assert the static help body from CommandHelp.txt.j2 is present"
+      ansible.builtin.assert:
+        that:
+          - "'### Domino commands ###' in command_help_body"
+          - "'sudo service domino restart' in command_help_body"
+          - "'### Begin Stand-alone Java testing commands ###' in command_help_body"
+        fail_msg: "templates/CommandHelp.txt.j2 body did not render into /tmp/CommandHelp.txt"
+
+    - name: "Assert the templated paths resolved from the play variables"
+      ansible.builtin.assert:
+        that:
+          - expected_domino_home_dir ~ '/IBM_TECHNICAL_SUPPORT/autoconfigure.log' in command_help_body
+          - expected_domino_install_basedir ~ '/bin/server' in command_help_body
+          - expected_service_home_dir ~ '/user.id' in command_help_body
+          - ansible_all_ipv4_addresses[0] in command_help_body
+        fail_msg: "CommandHelp.txt did not carry the expected templated paths"

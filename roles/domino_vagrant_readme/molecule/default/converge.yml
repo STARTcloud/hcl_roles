@@ -1,0 +1,13 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    run_tasks: true
+    show_help: true
+    domino_home_dir: /local/notesdata
+    domino_install_basedir: /opt/hcl/domino
+    service_home_dir: /home/startcloud
+    domino_admin_notes_id_password: password
+  roles:
+    - role: domino_vagrant_readme
