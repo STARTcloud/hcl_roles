@@ -1,0 +1,47 @@
+---
+name: Lint
+
+"on":
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  ansible-lint:
+    name: Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@main
+        with:
+          requirements_file: requirements.yml
+
+  build-check:
+    name: Collection Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Build collection artifact
+        run: ansible-galaxy collection build
+
+      # Tripwire: the gitignored secrets vaults must never reach an artifact.
+      - name: Assert vault files are not packaged
+        run: |
+          ARTIFACT="$(ls startcloud-hcl_roles-*.tar.gz)"
+          if tar -tzf "$ARTIFACT" | grep -E '(^|/)vault(-[^/]+)?\.yml$'; then
+            echo "a vault file leaked into the artifact" >&2
+            exit 1
+          fi
+          echo "Artifact clean: $ARTIFACT"

@@ -1,4 +1,5 @@
 ---
 run_tasks: true
 updatesite_repo: "https://github.com/OpenNTF/generate-domino-update-site"
+updatesite_version: "6.0.0"
 nsfodp_updatesite_path: "/opt/nsfodp/updatesite"

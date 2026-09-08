@@ -1,0 +1,69 @@
+---
+name: Molecule
+
+# Role-level molecule testing lives HERE, with the roles — not in the
+# consumer provisioners. Consumers (startcloud_generic_provisioner) gate
+# their dependency-bump PRs on integration only; role correctness is proven
+# in this repo before a release ever exists.
+#
+# The matrix is the curated set of scenarios proven green in the consumer's
+# harness. 100+ roles carry molecule/ dirs; the rest are unproven — do NOT
+# switch to auto-discovery (ls -d roles/*/molecule) until they are, or the
+# matrix floods red. Extend the list as scenarios go green.
+
+"on":
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  molecule:
+    name: Molecule (${{ matrix.role }})
+    # Release-please PRs change only version + changelog; their CI stays
+    # lint-cheap. A skipped job still counts as PASSING for required checks,
+    # so release PRs never sit stuck on "Expected". When called via
+    # workflow_call the event is the caller's push — the caller applies its
+    # own guard there.
+    if: ${{ github.event_name != 'pull_request' || !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        role: []
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install molecule and dependencies
+        run: pip install molecule molecule-plugins[docker] ansible-core netaddr
+
+      - name: Run molecule test
+        working-directory: roles/${{ matrix.role }}
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+        run: molecule test
+
+  # Single aggregate check so branch protection / auto-merge can require one
+  # name ("Molecule OK") instead of 29 matrix legs.
+  molecule-ok:
+    name: Molecule OK
+    needs: molecule
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any matrix leg failed
+        # skipped counts as OK — that's the release-PR path above.
+        run: |
+          RESULT="${{ needs.molecule.result }}"
+          echo "molecule matrix result: $RESULT"
+          [ "$RESULT" = "success" ] || [ "$RESULT" = "skipped" ]

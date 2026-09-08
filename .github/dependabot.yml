@@ -1,0 +1,20 @@
+---
+# Dependabot configuration for HCL Roles.
+# Keeps the GitHub Actions used by the workflows up to date. The collection
+# has no runtime dependencies beyond ansible-core and the Galaxy collections
+# pinned in requirements.yml (managed manually).
+
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    open-pull-requests-limit: 5
+    labels:
+      - 'github-actions'
+      - 'dependencies'
+    commit-message:
+      prefix: 'ci'

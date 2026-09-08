@@ -17,7 +17,7 @@
 
     # Keyed on the versioned jar so bumping rest_vagrant_crud_version redeploys
     # without any hand-cleaning of markers or stale artifacts.
-    - name: "Checking if REST Interface {{ rest_interface_jar }} is deployed"
+    - name: "Checking if REST Interface is deployed: {{ rest_interface_jar }}"
       register: rest_interface_deployed
       ansible.builtin.stat:
         path: "{{ rest_app_home_dir }}/bin/{{ rest_interface_jar }}"
@@ -33,7 +33,7 @@
         url: "{{ rest_vagrant_crud_git_repo }}{{ rest_vagrant_crud_version }}/{{ rest_vagrant_crud_archive }}"
         dest: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"
 
-    - name: "Extracting Domino VagrantCRUD API from {{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"
+    - name: "Extracting Domino VagrantCRUD API from {{ rest_vagrant_crud_archive }}"
       when: not rest_interface_deployed.stat.exists
       ansible.builtin.unarchive:
         src: "{{ installer_dir }}/restapi/archives/{{ rest_vagrant_crud_version }}-{{ rest_vagrant_crud_archive }}"

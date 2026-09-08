@@ -1,7 +1,7 @@
 ---
 namespace: startcloud
 name: hcl_roles
-version: 1.0.3
+version: 0.1.0 # x-release-please-version
 readme: "README.md"
 repository: https://github.com/STARTcloud/hcl_roles
 documentation: https://github.com/STARTcloud/hcl_roles
@@ -16,3 +16,13 @@ tags:
   - hcl
   - roles
   - linux
+build_ignore:
+  - .ansible
+  - .claude
+  - .vscode
+  - vault.yml
+  - DeployKey_rsa
+  - .github
+  - release-please-config.json
+  - .release-please-manifest.json
+  - lint-*.txt

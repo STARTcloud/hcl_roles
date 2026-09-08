@@ -23,8 +23,9 @@
       become: true
       become_user: "{{ service_user }}"
       when: not updatesite_deployed.stat.exists
-      ansible.builtin.git: # noqa: latest
+      ansible.builtin.git:
         repo: "{{ updatesite_repo }}"
+        version: "{{ updatesite_version }}"
         dest: "/vagrant/installers/update-site/"
         force: false
         update: false

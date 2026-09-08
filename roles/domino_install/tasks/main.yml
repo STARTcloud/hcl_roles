@@ -56,7 +56,15 @@
       ansible.builtin.stat:
         path: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
 
-    - name: "Validating the Domino installer archive lists as a tar"
+    # The installer host answers a bad or expired bearer token with HTTP 200 and
+    # an HTML error page, which get_url stores as the archive. Every later run
+    # then sees the file exists, skips both downloads, and dies at unarchive
+    # until someone removes it by hand. This probe proves the bytes are really an
+    # archive so the poisoned file can be deleted and the basic auth fallback can
+    # re-fetch. No Ansible module lists an archive without extracting it, so tar
+    # is required here; when the host returns 401/403 on a bad token these probe,
+    # delete and redownload tasks all disappear.
+    - name: "Validating the Domino installer archive lists as a tar" # noqa: command-instead-of-module
       when:
         - domino_archive_post_bearer.stat.exists
         - not domino_server_installed.stat.exists
@@ -97,7 +105,7 @@
         - secrets.installer_url_bearer is defined
         - secrets.installer_url_bearer != ''
 
-    - name: "Validating the redownloaded Domino installer archive lists as a tar"
+    - name: "Validating the redownloaded Domino installer archive lists as a tar" # noqa: command-instead-of-module
       when:
         - not domino_server_installed.stat.exists
         - domlsresult_bearer_retry is not skipped

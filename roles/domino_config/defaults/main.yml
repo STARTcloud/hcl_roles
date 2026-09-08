@@ -25,4 +25,4 @@ domino_origin_server_name_common_with_org: >-
   ((domino_major_version >= 12 and ((domino_major_version == 12 and domino_patch_version >= 2) or domino_major_version > 12) and
   domino_admin_ignore_new_servernaming_convention == 1) or (domino_major_version == 12 and domino_patch_version < 2 and
   domino_admin_ignore_new_servernaming_convention == 0))) | ternary(origin_server + '/' + domino_organization + (domino_country_suffix_abbr | default('')),
-  origin_server + '.' + domino_server_domain + '/' + domino_organization + (domino_country_suffix_abbr | default(''))) }}
+  origin_server + '.' + domino_server_domain + '/' + domino_organization + (domino_country_suffix_abbr | default('')))) }}

@@ -17,7 +17,9 @@ verse_organization_icon: "data:image/svg+xml;base64,AAABAAEAICAAAAEAIACoEAAAFgAA
 # Names of every role this deployment runs, derived from the provision_roles list
 # the core_provisioner driver passes to every play. Roles gated run_tasks: false are
 # excluded, so entries track what is actually enabled. Overridable from Hosts.yml.
-enabled_roles: "{{ ((provision_roles | default([]) | selectattr('vars.run_tasks', 'undefined') | list) + (provision_roles | default([]) | selectattr('vars.run_tasks', 'defined') | selectattr('vars.run_tasks') | list)) | map(attribute='name') | list }}"
+enabled_roles: "{{ ((provision_roles | default([]) | selectattr('vars.run_tasks', 'undefined') | list) +
+  (provision_roles | default([]) | selectattr('vars.run_tasks', 'defined') | selectattr('vars.run_tasks') | list))
+  | map(attribute='name') | list }}"
 
 verse_app_switcher_enabled_services:
   - WelcomePage

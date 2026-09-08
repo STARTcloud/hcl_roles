@@ -174,7 +174,9 @@
     - notes_multiuser_enabled
     - notes_include_transform
   ansible.windows.win_command:
-    cmd: "setup.exe /s /v\"TRANSFORMS=\\\"{{ notes_mst_file }}\\\" SETMULTIUSER=1 CITRIX=1 MULTIUSERBASEDIR={{ notes_multiuser_base_dir }}:\\ /L*v C:\\temp\\verbose.log MULTIUSERCOMMONDIR={{ notes_multiuser_common_dir }}\\ /qb+\""
+    cmd: "setup.exe /s /v\"TRANSFORMS=\\\"{{ notes_mst_file }}\\\" SETMULTIUSER=1 CITRIX=1
+      MULTIUSERBASEDIR={{ notes_multiuser_base_dir }}:\\ /L*v C:\\temp\\verbose.log
+      MULTIUSERCOMMONDIR={{ notes_multiuser_common_dir }}\\ /qb+\""
     chdir: "{{ notes_unpack_dir }}"
   register: notes_install_result
 
