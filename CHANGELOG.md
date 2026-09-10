@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/STARTcloud/hcl_roles/compare/v0.2.0...v0.2.1) (2026-09-10)
+
+
+### Bug Fixes
+
+* adopt markdown lint and prettier tooling ([388ccba](https://github.com/STARTcloud/hcl_roles/commit/388ccba798a50a7c9af43a75f6ec670b779cc17f))
+* more ci/cd linting ([ccdebca](https://github.com/STARTcloud/hcl_roles/commit/ccdebca6570527ef3abb63469301cdc570e641d2))
+
 ## [0.2.0](https://github.com/STARTcloud/hcl_roles/compare/v0.1.0...v0.2.0) (2026-09-08)
 
 
