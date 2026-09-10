@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/STARTcloud/hcl_roles/compare/v0.2.1...v0.2.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* read the release sha with the repo token so private dispatch works ([2924165](https://github.com/STARTcloud/hcl_roles/commit/2924165051ef6e462b4d492fc0d7dc551439cf7c))
+
 ## [0.2.1](https://github.com/STARTcloud/hcl_roles/compare/v0.2.0...v0.2.1) (2026-09-10)
 
 
