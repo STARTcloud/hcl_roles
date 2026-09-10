@@ -164,7 +164,7 @@ jobs:
           TAG: ${{ needs.release-please.outputs.tag_name }}
           CONSUMER: ${{ matrix.consumer }}
         run: |
-          SHA="$(gh api "repos/${{ github.repository }}/commits/$TAG" --jq .sha)"
+          SHA="$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh api "repos/${{ github.repository }}/commits/$TAG" --jq .sha)"
           gh api "repos/$CONSUMER/dispatches" \
             -f event_type=dependency-update \
             -f "client_payload[repo]=${{ github.repository }}" \
