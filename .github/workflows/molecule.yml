@@ -11,12 +11,11 @@ name: Molecule
 # switch to auto-discovery (ls -d roles/*/molecule) until they are, or the
 # matrix floods red. Extend the list as scenarios go green.
 
-"on":
+on:
   pull_request:
     branches: [main]
   workflow_dispatch:
   workflow_call:
-
 permissions:
   contents: read
 

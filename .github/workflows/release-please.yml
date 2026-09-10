@@ -1,11 +1,10 @@
 ---
 name: Release Please
 
-"on":
+on:
   push:
     branches:
       - main
-
 permissions:
   contents: write
   pull-requests: write
@@ -129,46 +128,46 @@ jobs:
   # App token, not GITHUB_TOKEN: dispatches sent with GITHUB_TOKEN cannot
   # cross repos. The startcloud-bot App (org secrets BOT_APP_ID /
   # BOT_PRIVATE_KEY) is installed on this repo and every consumer.
-  #
-  # notify-consumers:
-  #   name: Notify consumers
-  #   needs: [release-please, build-collection]
-  #   if: ${{ needs.release-please.outputs.release_created == 'true' }}
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       consumer:
-  #         - STARTcloud/hcl_domino_standalone_provisioner
-  #         - STARTcloud/hcl_domino_additional_provisioner
-  #   steps:
-  #     - name: Split owner and repo
-  #       id: target
-  #       env:
-  #         CONSUMER: ${{ matrix.consumer }}
-  #       run: |
-  #         echo "owner=${CONSUMER%%/*}" >> "$GITHUB_OUTPUT"
-  #         echo "repo=${CONSUMER##*/}" >> "$GITHUB_OUTPUT"
-  #
-  #     - name: Mint App token
-  #       id: app
-  #       uses: actions/create-github-app-token@v3
-  #       with:
-  #         client-id: ${{ secrets.BOT_APP_ID }}
-  #         private-key: ${{ secrets.BOT_PRIVATE_KEY }}
-  #         owner: ${{ steps.target.outputs.owner }}
-  #         repositories: ${{ steps.target.outputs.repo }}
-  #
-  #     - name: Dispatch dependency-update
-  #       env:
-  #         GH_TOKEN: ${{ steps.app.outputs.token }}
-  #         TAG: ${{ needs.release-please.outputs.tag_name }}
-  #         CONSUMER: ${{ matrix.consumer }}
-  #       run: |
-  #         SHA="$(gh api "repos/${{ github.repository }}/commits/$TAG" --jq .sha)"
-  #         gh api "repos/$CONSUMER/dispatches" \
-  #           -f event_type=dependency-update \
-  #           -f "client_payload[repo]=${{ github.repository }}" \
-  #           -f "client_payload[tag]=$TAG" \
-  #           -f "client_payload[sha]=$SHA"
-  #         echo "Dispatched dependency-update: $CONSUMER <- $TAG"
+  notify-consumers:
+    name: Notify consumers
+    needs: [release-please, build-collection]
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        consumer:
+          - STARTcloud/hcl_domino_standalone_provisioner
+          - STARTcloud/hcl_domino_additional_provisioner
+          - Moonshine-IDE/moonshinedev_provisioner_private
+    steps:
+      - name: Split owner and repo
+        id: target
+        env:
+          CONSUMER: ${{ matrix.consumer }}
+        run: |
+          echo "owner=${CONSUMER%%/*}" >> "$GITHUB_OUTPUT"
+          echo "repo=${CONSUMER##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Mint App token
+        id: app
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+          owner: ${{ steps.target.outputs.owner }}
+          repositories: ${{ steps.target.outputs.repo }}
+
+      - name: Dispatch dependency-update
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+          CONSUMER: ${{ matrix.consumer }}
+        run: |
+          SHA="$(gh api "repos/${{ github.repository }}/commits/$TAG" --jq .sha)"
+          gh api "repos/$CONSUMER/dispatches" \
+            -f event_type=dependency-update \
+            -f "client_payload[repo]=${{ github.repository }}" \
+            -f "client_payload[tag]=$TAG" \
+            -f "client_payload[sha]=$SHA"
+          echo "Dispatched dependency-update: $CONSUMER <- $TAG"

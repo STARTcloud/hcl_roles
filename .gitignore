@@ -1,7 +1,8 @@
+*.swp
+*.swo
+.DS_Store
 DeployKey_rsa
 vault.yml
-
-# General Ansible / Python artifacts (previously duplicated per-role)
 *.retry
 *.pyc
 __pycache__/
@@ -9,5 +10,6 @@ __pycache__/
 *.log
 .ansible/
 lint-*.txt
+notifications.md
 startcloud-hcl_roles-*.tar.gz
 startcloud-hcl_roles-*.tar.gz.sha256

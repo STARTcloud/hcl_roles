@@ -1,16 +1,30 @@
 ---
 name: Lint
 
-"on":
+on:
   pull_request:
     branches: [main]
   workflow_dispatch:
   workflow_call:
-
 permissions:
   contents: read
 
 jobs:
+  format:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Check Prettier formatting
+        run: npx --yes prettier --check .
+
   ansible-lint:
     name: Ansible Lint
     runs-on: ubuntu-latest

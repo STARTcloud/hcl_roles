@@ -1,0 +1,11 @@
+CHANGELOG.md
+LICENSE.md
+.ansible-lint
+.yamllint
+.ansible/
+roles/
+playbooks/
+meta/
+.github/
+galaxy.yml
+requirements.yml
