@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/STARTcloud/hcl_roles/compare/v0.2.3...v0.3.0) (2026-10-07)
+
+
+### Features
+
+* add molecule scenarios for the domino roles the provisioners declare ([ea1a124](https://github.com/STARTcloud/hcl_roles/commit/ea1a124e8fd3a2357d82abafda6decbbb42e77a1))
+
+
+### Bug Fixes
+
+* install community.general for the domino_service_nash scenario ([e6d4164](https://github.com/STARTcloud/hcl_roles/commit/e6d416447b150c70d8f30445eb7f8d8be35af69e))
+* pass repository secrets to molecule on release pushes ([401ff60](https://github.com/STARTcloud/hcl_roles/commit/401ff60e9cc28c7552bf8277e8b0c81c72d70239))
+
 ## [0.2.3](https://github.com/STARTcloud/hcl_roles/compare/v0.2.2...v0.2.3) (2026-10-07)
 
 
