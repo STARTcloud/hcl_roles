@@ -1,0 +1,499 @@
+---
+- name: "Block to Allow Loading of Variables without running task"
+  when: run_tasks
+  block:
+    - name: "Failing if Domino is older than the 14.5 Domino IQ needs: {{ domino_version_string }}"
+      ansible.builtin.fail:
+        msg: "Domino IQ requires Domino 14.5 or newer, this server is {{ domino_version_string }}"
+      when: domino_version_string is version('14.5', '<')
+
+    - name: "Failing if domino_iq_mode is neither remote nor local: {{ domino_iq_mode }}"
+      ansible.builtin.fail:
+        msg: "domino_iq_mode must be remote or local, got {{ domino_iq_mode }}"
+      when: domino_iq_mode not in ['remote', 'local']
+
+    - name: "Failing if no Domino IQ model is set"
+      ansible.builtin.fail:
+        msg: "domino_iq_model is empty, set the model name the AI endpoint serves"
+      when: domino_iq_model | default('', true) | length == 0
+
+    - name: "Failing if no Domino IQ remote endpoint URL is set"
+      ansible.builtin.fail:
+        msg: "domino_iq_endpoint_url is empty, set the HTTPS chat completions URL of the remote AI endpoint"
+      when:
+        - domino_iq_mode == 'remote'
+        - domino_iq_endpoint_url | default('', true) | length == 0
+
+    - name: "Failing if no Domino IQ API key is in the secrets"
+      ansible.builtin.fail:
+        msg: "secrets.domino_iq_api_key is empty, add domino_iq_api_key to .secrets.yml for the remote AI endpoint"
+      when:
+        - domino_iq_mode == 'remote'
+        - domino_iq_api_key | default('', true) | length == 0
+
+    - name: "Failing if no Domino IQ local model file is set"
+      ansible.builtin.fail:
+        msg: "domino_iq_local_model_archive is empty, set the GGUF file name the local AI engine loads"
+      when:
+        - domino_iq_mode == 'local'
+        - domino_iq_local_model_archive | default('', true) | length == 0
+
+    - name: "Checking if Domino IQ is configured: {{ domino_iq_mode }}"
+      register: domino_iq_configured_check
+      ansible.builtin.stat:
+        path: "{{ completed_dir }}/domino_iq_configured"
+        checksum_algorithm: sha256
+
+    - name: "Configuring Domino IQ"
+      when: not domino_iq_configured_check.stat.exists
+      block:
+        - name: "Creating installation directories for Domino IQ"
+          ansible.builtin.file:
+            mode: "0755"
+            path: "{{ item }}"
+            state: directory
+          with_items:
+            - "{{ installer_dir }}/domino_iq/archives"
+
+        - name: "Checking if the Domino IQ Llama Server is at domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+          register: domino_iq_llama_server_check
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+            checksum_algorithm: sha256
+
+        - name: "Describing the Domino IQ Llama Server download"
+          ansible.builtin.set_fact:
+            installer_file:
+              app: "{{ domino_iq_llama_server_app }}"
+              version: "{{ domino_iq_llama_server_version }}"
+              variant: "{{ domino_iq_llama_server_variant }}"
+              name: "{{ domino_iq_llama_server_archive }}"
+
+        - name: "Downloading the Domino IQ Llama Server using Bearer token from {{ installer_base_url }}"
+          register: domino_iq_llama_server_result_bearer
+          ansible.builtin.get_url:
+            mode: "0755"
+            validate_certs: false
+            url: "{{ installer_url }}"
+            dest: "{{ installer_dir }}/domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+            headers:
+              Authorization: "Bearer {{ secrets.installer_url_bearer }}"
+          when:
+            - not domino_iq_llama_server_check.stat.exists
+            - secrets.installer_url_bearer is defined
+            - secrets.installer_url_bearer != ''
+          failed_when: false
+
+        - name: "Re-checking the Domino IQ Llama Server archive after the Bearer download"
+          register: domino_iq_llama_server_post_bearer
+          ansible.builtin.stat:
+            path: "{{ installer_dir }}/domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+
+        - name: "Downloading the Domino IQ Llama Server using basic auth from {{ installer_base_url }}"
+          register: domino_iq_llama_server_result
+          until: "domino_iq_llama_server_result is not failed"
+          retries: 3
+          ansible.builtin.get_url:
+            mode: "0755"
+            validate_certs: false
+            url: "{{ installer_url }}"
+            dest: "{{ installer_dir }}/domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+            username: "{{ installer_url_user }}"
+            password: "{{ secrets.installer_url_pass }}"
+          when:
+            - not domino_iq_llama_server_post_bearer.stat.exists
+
+        - name: "Downloading the Domino IQ local model"
+          when: domino_iq_mode == 'local'
+          block:
+            - name: "Creating the model directory for Domino IQ"
+              ansible.builtin.file:
+                mode: "0755"
+                path: "{{ item }}"
+                state: directory
+              with_items:
+                - "{{ installer_dir }}/domino_iq/models"
+
+            - name: "Checking if the Domino IQ model is at domino_iq/models/{{ domino_iq_local_model_archive }}"
+              register: domino_iq_local_model_check
+              ansible.builtin.stat:
+                path: "{{ installer_dir }}/domino_iq/models/{{ domino_iq_local_model_archive }}"
+                checksum_algorithm: sha256
+
+            - name: "Describing the Domino IQ model download"
+              ansible.builtin.set_fact:
+                installer_file:
+                  app: "{{ domino_iq_local_model_app }}"
+                  version: "{{ domino_iq_local_model_version }}"
+                  variant: "{{ domino_iq_local_model_variant }}"
+                  name: "{{ domino_iq_local_model_archive }}"
+
+            - name: "Downloading the Domino IQ model using Bearer token from {{ installer_base_url }}"
+              register: domino_iq_local_model_result_bearer
+              ansible.builtin.get_url:
+                mode: "0644"
+                validate_certs: false
+                url: "{{ installer_url }}"
+                dest: "{{ installer_dir }}/domino_iq/models/{{ domino_iq_local_model_archive }}"
+                headers:
+                  Authorization: "Bearer {{ secrets.installer_url_bearer }}"
+              when:
+                - not domino_iq_local_model_check.stat.exists
+                - secrets.installer_url_bearer is defined
+                - secrets.installer_url_bearer != ''
+              failed_when: false
+
+            - name: "Re-checking the Domino IQ model after the Bearer download"
+              register: domino_iq_local_model_post_bearer
+              ansible.builtin.stat:
+                path: "{{ installer_dir }}/domino_iq/models/{{ domino_iq_local_model_archive }}"
+
+            - name: "Downloading the Domino IQ model using basic auth from {{ installer_base_url }}"
+              register: domino_iq_local_model_result
+              until: "domino_iq_local_model_result is not failed"
+              retries: 3
+              ansible.builtin.get_url:
+                mode: "0644"
+                validate_certs: false
+                url: "{{ installer_url }}"
+                dest: "{{ installer_dir }}/domino_iq/models/{{ domino_iq_local_model_archive }}"
+                username: "{{ installer_url_user }}"
+                password: "{{ secrets.installer_url_pass }}"
+              when:
+                - not domino_iq_local_model_post_bearer.stat.exists
+
+        - name: "Adding this server to the Domino IQ servers in the Directory Profile"
+          when: domino_iq_directory_profile_update
+          block:
+            - name: "Handing templated domino_iq_directory_profile.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/domino_iq_directory_profile.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "domino_iq_directory_profile.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing domino_iq_directory_profile.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_directory_profile.json"
+
+            - name: "Checking if domino_iq_directory_profile.json JSON applied succesfully"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_directory_profile.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_directory_profile
+              failed_when: presence_domino_iq_directory_profile is changed
+
+            - name: "Handing templated gather_domino_iq_directory_profile.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/gather_domino_iq_directory_profile.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "gather_domino_iq_directory_profile.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing gather_domino_iq_directory_profile.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_directory_profile.json"
+
+            - name: "Checking if gather_domino_iq_directory_profile.json JSON applied succesfully"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_directory_profile.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_gather_directory_profile
+              failed_when: presence_domino_iq_gather_directory_profile is changed
+
+            - name: "Reading the Directory Profile Domino IQ fields from file"
+              ansible.builtin.slurp:
+                src: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_directory_profile.txt"
+              register: domino_iq_directory_profile_file
+
+            - name: "Failing if the Directory Profile does not list this server as a Domino IQ server"
+              ansible.builtin.fail:
+                msg: "The Directory Profile does not list {{ domino_iq_server_name }} in DomIQServers: {{ domino_iq_directory_profile_file['content'] | b64decode }}"
+              when: domino_iq_server_name not in (domino_iq_directory_profile_file['content'] | b64decode)
+
+        - name: "Stopping Domino for Changes to take effect"
+          become: true
+          ansible.builtin.service:
+            name: domino
+            state: stopped
+            enabled: true
+          register: domino_service_stopped_domino_iq
+          until: domino_service_stopped_domino_iq.state == "stopped"
+          retries: 3
+          delay: 5
+
+        - name: "Waiting for 30 seconds to let Domino fully shutdown"
+          ansible.builtin.pause:
+            seconds: "{{ domino_shutdown_delay }}"
+
+        - name: "Extracting the Domino IQ Llama Server into the Domino program directory from {{ domino_iq_llama_server_archive }}"
+          become: true
+          ansible.builtin.unarchive:
+            mode: "ugo+rx"
+            owner: root
+            group: root
+            src: "{{ installer_dir }}/domino_iq/archives/{{ domino_iq_llama_server_archive }}"
+            dest: "{{ domino_install_dir }}"
+            creates: "{{ domino_install_dir }}/llama-server"
+            remote_src: true
+
+        - name: "Adding DOMIQ_USE_MAX_COMPLETION_TOKENS to Notes.ini"
+          when: domino_iq_use_max_completion_tokens
+          ansible.builtin.lineinfile:
+            dest: "{{ domino_home_dir }}/notes.ini"
+            regexp: "^DOMIQ_USE_MAX_COMPLETION_TOKENS="
+            line: "DOMIQ_USE_MAX_COMPLETION_TOKENS=1"
+            owner: "{{ domino_user }}"
+            group: "{{ domino_group }}"
+            state: present
+
+        - name: "Starting Domino for Changes to take effect"
+          become: true
+          ansible.builtin.service:
+            name: domino
+            state: started
+            enabled: true
+          register: domino_service_start_details_domino_iq
+          until: domino_service_start_details_domino_iq.state == "started"
+          retries: 10
+          delay: 10
+
+        - name: "Waiting for HTTP Server to start"
+          ansible.builtin.wait_for:
+            path: /local/notesdata/IBM_TECHNICAL_SUPPORT/console.log
+            search_regex: "HTTP Server: Started"
+            timeout: 300
+            msg: "HTTP Server did not start within the timeout period."
+
+        - name: "Waiting for 60 seconds to let Domino HTTP fully configure"
+          ansible.builtin.pause:
+            seconds: "{{ domino_startup_delay }}"
+
+        - name: "Waiting until the file dominoiq.nsf is present before continuing"
+          ansible.builtin.wait_for:
+            path: "{{ domino_home_dir }}/dominoiq.nsf"
+
+        - name: "Adding the trusted roots of the Domino IQ remote AI endpoint to CertStore"
+          ansible.builtin.shell: 'domino cmd "load certmgr -ImportRootFromFile {{ item }}" 20'
+          become: true
+          args:
+            executable: "/bin/bash"
+          register: domino_iq_certmgr_add_root_cert
+          changed_when: true
+          loop: "{{ domino_iq_trusted_root_files }}"
+
+        - name: "Configuring the Domino IQ local model"
+          when: domino_iq_mode == 'local'
+          block:
+            - name: "Waiting until the llm_models directory is present before continuing"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/llm_models"
+
+            - name: "Placing the Domino IQ model into llm_models: {{ domino_iq_local_model_archive }}"
+              become: true
+              ansible.builtin.copy:
+                mode: "0644"
+                src: "{{ installer_dir }}/domino_iq/models/{{ domino_iq_local_model_archive }}"
+                dest: "{{ domino_home_dir }}/llm_models/{{ domino_iq_local_model_archive }}"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                remote_src: true
+
+            - name: "Handing templated gather_domino_iq_llm_model.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/gather_domino_iq_llm_model.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "gather_domino_iq_llm_model.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing gather_domino_iq_llm_model.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_llm_model.json"
+
+            - name: "Checking if gather_domino_iq_llm_model.json JSON applied succesfully"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_llm_model.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_gather_llm_model
+              failed_when: presence_domino_iq_gather_llm_model is changed
+
+            - name: "Checking for the exported Domino IQ LLM Model document"
+              register: domino_iq_llm_model_check
+              ansible.builtin.stat:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_llm_model.txt"
+                checksum_algorithm: sha256
+
+            - name: "Reading the Domino IQ LLM Model document from file"
+              when: domino_iq_llm_model_check.stat.exists
+              ansible.builtin.slurp:
+                src: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_llm_model.txt"
+              register: domino_iq_llm_model_file
+
+            - name: "Setting Update/Create on the LLM Model document to prevent duplicates"
+              when: domino_iq_llm_model_check.stat.exists
+              ansible.builtin.set_fact:
+                domino_iq_llm_model_create: "{{ false if ('ModelName=' + domino_iq_model) in (domino_iq_llm_model_file['content'] | b64decode)
+                  else domino_iq_llm_model_create | default(true) }}"
+
+            - name: "Handing templated domino_iq_llm_model.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/domino_iq_llm_model.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "domino_iq_llm_model.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing domino_iq_llm_model.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_llm_model.json"
+
+            - name: "Checking if Genesis reports that it created the Domino IQ LLM Model document"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_llm_model.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_llm_model
+              failed_when: presence_domino_iq_llm_model is changed
+
+        - name: "Creating/Updating the Domino IQ Configuration document"
+          block:
+            - name: "Handing templated gather_domino_iq_configuration.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/gather_domino_iq_configuration.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "gather_domino_iq_configuration.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing gather_domino_iq_configuration.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_configuration.json"
+
+            - name: "Checking if gather_domino_iq_configuration.json JSON applied succesfully"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/gather_domino_iq_configuration.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_gather_configuration
+              failed_when: presence_domino_iq_gather_configuration is changed
+
+            - name: "Checking for the exported Domino IQ Configuration document"
+              register: domino_iq_configuration_check
+              ansible.builtin.stat:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_configuration.txt"
+                checksum_algorithm: sha256
+
+            - name: "Reading the Domino IQ Configuration document from file"
+              when: domino_iq_configuration_check.stat.exists
+              ansible.builtin.slurp:
+                src: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_configuration.txt"
+              register: domino_iq_configuration_file
+
+            - name: "Setting Update/Create on the Configuration document to prevent duplicates"
+              when: domino_iq_configuration_check.stat.exists
+              ansible.builtin.set_fact:
+                domino_iq_configuration_create: "{{ false if ('AccountName=' + domino_iq_server_name) in (domino_iq_configuration_file['content'] | b64decode)
+                  else domino_iq_configuration_create | default(true) }}"
+
+            - name: "Handing templated domino_iq_configuration.json JSON to Genesis"
+              ansible.builtin.template:
+                dest: "{{ domino_home_dir }}/JavaAddin/Genesis/json/domino_iq_configuration.json"
+                mode: "a+x"
+                owner: "{{ domino_user }}"
+                group: "{{ domino_group }}"
+                src: "domino_iq_configuration.json.j2"
+
+            - name: "Waiting until Genesis returns OK after processing domino_iq_configuration.json"
+              ansible.builtin.wait_for:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_configuration.json"
+
+            - name: "Checking if Genesis reports that it created the Domino IQ Configuration document"
+              ansible.builtin.lineinfile:
+                path: "{{ domino_home_dir }}/JavaAddin/Genesis/jsonresponse/domino_iq_configuration.json"
+                line: "OK"
+                state: present
+              check_mode: true
+              register: presence_domino_iq_configuration
+              failed_when: presence_domino_iq_configuration is changed
+
+        - name: "Stopping Domino for Changes to take effect"
+          become: true
+          ansible.builtin.service:
+            name: domino
+            state: stopped
+            enabled: true
+          register: domino_service_stopped_domino_iq_2
+          until: domino_service_stopped_domino_iq_2.state == "stopped"
+          retries: 3
+          delay: 5
+
+        - name: "Waiting for 30 seconds to let Domino fully shutdown"
+          ansible.builtin.pause:
+            seconds: "{{ domino_shutdown_delay }}"
+
+        - name: "Starting Domino for Changes to take effect"
+          become: true
+          ansible.builtin.service:
+            name: domino
+            state: started
+            enabled: true
+          register: domino_service_start_details_domino_iq_2
+          until: domino_service_start_details_domino_iq_2.state == "started"
+          retries: 10
+          delay: 10
+
+        - name: "Waiting for HTTP Server to start"
+          ansible.builtin.wait_for:
+            path: /local/notesdata/IBM_TECHNICAL_SUPPORT/console.log
+            search_regex: "HTTP Server: Started"
+            timeout: 300
+            msg: "HTTP Server did not start within the timeout period."
+
+        - name: "Waiting for 60 seconds to let Domino HTTP fully configure"
+          ansible.builtin.pause:
+            seconds: "{{ domino_startup_delay }}"
+
+        - name: "Waiting for the Domino IQ local AI engine to report the model as running"
+          when: domino_iq_mode == 'local'
+          ansible.builtin.wait_for:
+            path: /local/notesdata/IBM_TECHNICAL_SUPPORT/console.log
+            search_regex: "DominoIQ\\s*:\\s*Running"
+            timeout: 300
+            msg: "The Domino IQ local AI engine did not report Running within the timeout period."
+
+        - name: "Showing the Domino server tasks"
+          ansible.builtin.shell: 'domino cmd "show tasks" 20'
+          become: true
+          args:
+            executable: "/bin/bash"
+          register: domino_iq_show_tasks
+          changed_when: false
+
+        - name: "Debugging the Domino server tasks"
+          when: ( domino_iq_debug or debug_all )
+          ansible.builtin.debug:
+            var: domino_iq_show_tasks.stdout_lines
+
+        - name: "Failing if the DominoIQ task reports it is disabled or has no configuration"
+          ansible.builtin.fail:
+            msg: "The DominoIQ task is not configured on this server: {{ domino_iq_show_tasks.stdout }}"
+          when: domino_iq_show_tasks.stdout is search('DominoIQ\\s*:\\s*(Disabled|No Configuration|Standby)')
+
+        - name: "Marking Domino IQ as configured"
+          ansible.builtin.file:
+            mode: "0644"
+            path: "{{ item }}"
+            state: touch
+          with_items:
+            - "{{ completed_dir }}/domino_iq_configured"

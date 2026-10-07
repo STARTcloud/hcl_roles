@@ -1,0 +1,114 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: "Installing unzip (normally installed by the dependencies role)"
+      ansible.builtin.apt:
+        name: unzip
+        state: present
+        update_cache: true
+
+    - name: "Creating the startcloud group (normally created by the users role)"
+      ansible.builtin.group:
+        name: startcloud
+        state: present
+
+    - name: "Creating the startcloud user (normally created by the users role)"
+      ansible.builtin.user:
+        name: startcloud
+        group: startcloud
+        home: /home/startcloud
+        shell: /bin/bash
+        create_home: true
+        state: present
+
+    - name: "Creating the Domino, Genesis, installer and completed directories a provisioned guest carries"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /local/notesdata/IBM_TECHNICAL_SUPPORT
+        - /local/notesdata/JavaAddin/Genesis/json
+        - /local/notesdata/JavaAddin/Genesis/jsonresponse
+        - /opt/hcl/domino/notes/latest/linux
+        - /vagrant/installers/domino_iq/archives
+        - /vagrant/completed
+        - /tmp/domino_iq_llama_server
+
+    - name: "Seeding the console log line a started Domino HTTP task writes"
+      ansible.builtin.copy:
+        dest: /local/notesdata/IBM_TECHNICAL_SUPPORT/console.log
+        content: "HTTP Server: Started\n"
+        mode: "0644"
+
+    - name: "Seeding notes.ini and the dominoiq.nsf a Domino IQ server creates on startup"
+      ansible.builtin.copy:
+        dest: "{{ item }}"
+        content: "molecule stand-in\n"
+        owner: startcloud
+        group: startcloud
+        mode: "0644"
+      loop:
+        - /local/notesdata/notes.ini
+        - /local/notesdata/dominoiq.nsf
+
+    - name: "Seeding the OK responses Genesis writes after processing each JSON"
+      ansible.builtin.copy:
+        dest: "/local/notesdata/JavaAddin/Genesis/jsonresponse/{{ item }}"
+        content: "OK\n"
+        mode: "0644"
+      loop:
+        - domino_iq_directory_profile.json
+        - gather_domino_iq_directory_profile.json
+        - gather_domino_iq_configuration.json
+        - domino_iq_configuration.json
+
+    - name: "Seeding the Directory Profile export Genesis writes"
+      ansible.builtin.copy:
+        dest: /local/notesdata/JavaAddin/Genesis/jsonresponse/domino_iq_directory_profile.txt
+        content: "DomIQServers=CN=startcloud-domino-iq/O=STARTcloud DomIQAdminServer=CN=startcloud-domino-iq/O=STARTcloud\n"
+        mode: "0644"
+
+    - name: "Creating a stand-in llama-server binary"
+      ansible.builtin.copy:
+        dest: /tmp/domino_iq_llama_server/llama-server
+        content: "echo llama-server\n"
+        mode: "0644"
+
+    - name: "Packing the stand-in Domino IQ Llama Server archive"
+      community.general.archive:
+        path: /tmp/domino_iq_llama_server/llama-server
+        dest: /vagrant/installers/domino_iq/archives/LlamaServerforDominoIQ_061726_Linux.zip
+        format: zip
+        mode: "0644"
+
+    - name: "Installing a domino command that answers show tasks"
+      ansible.builtin.copy:
+        dest: /usr/local/bin/domino
+        content: "echo 'DominoIQ : Running : Model - llama3.1:latest'\n"
+        mode: "0755"
+
+    - name: "Installing a domino unit for the role to stop and start"
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/domino.service
+        content: |
+          [Unit]
+          Description=Domino stand-in
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          ExecStart=/bin/true
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: "0644"
+
+    - name: "Starting and enabling the domino unit"
+      ansible.builtin.systemd:
+        name: domino
+        state: started
+        enabled: true
+        daemon_reload: true

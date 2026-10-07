@@ -1,0 +1,43 @@
+{
+	"title": "Creating the Domino IQ Configuration document",
+	"versionjson": "1.0.0",
+	"steps": [
+		{
+			"title": "--- Step 1. Create or update the Domino IQ Configuration document ---",
+			"databases": [
+				{
+					"action": "update",
+					"filePath": "dominoiq.nsf",
+					"documents": [
+						{
+{% if domino_iq_configuration_create %}
+							"action": "create",
+{% else %}
+							"action": "update",
+							"search": {
+								"formula": "Form=\"LLMProvider\" & @Name([Canonicalize]; AccountName)=\"{{ domino_iq_server_name }}\""
+							},
+{% endif %}
+							"computeWithForm": true,
+							"items": {
+								"Form": "LLMProvider",
+								"AccountName": "{{ domino_iq_server_name }}",
+								"Status": "1",
+								"command_model": "{{ domino_iq_model }}",
+{% if domino_iq_mode == 'local' %}
+								"DomIQ_endpointmode": "0",
+								"DomIQ_Port": "{{ domino_iq_local_port }}",
+								"DomIQ_UseTLS": "{{ '1' if domino_iq_local_use_tls else '' }}"
+{% else %}
+								"DomIQ_endpointmode": "1",
+								"DomIQ_ProviderURL": "{{ domino_iq_endpoint_url }}",
+								"DomIQ_provider_APIKey": "{{ domino_iq_api_key }}"
+{% endif %}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

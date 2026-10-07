@@ -1,0 +1,36 @@
+{
+	"title": "Creating the Domino IQ LLM Model document",
+	"versionjson": "1.0.0",
+	"steps": [
+		{
+			"title": "--- Step 1. Create or update the Domino IQ LLM Model document ---",
+			"databases": [
+				{
+					"action": "update",
+					"filePath": "dominoiq.nsf",
+					"documents": [
+						{
+{% if domino_iq_llm_model_create %}
+							"action": "create",
+{% else %}
+							"action": "update",
+							"search": {
+								"formula": "Form=\"LLMModel\" & ModelName=\"{{ domino_iq_model }}\""
+							},
+{% endif %}
+							"computeWithForm": true,
+							"items": {
+								"Form": "LLMModel",
+								"ModelName": "{{ domino_iq_model }}",
+								"ModelDescription": "{{ domino_iq_local_model_description }}",
+								"ModelFileName": "{{ domino_iq_local_model_archive }}",
+								"ModelDldEnabled": "0",
+								"ModelDldStatus": "3"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

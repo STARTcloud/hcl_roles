@@ -1,0 +1,25 @@
+{
+	"title": "Gathering the Directory Profile Domino IQ fields",
+	"versionjson": "1.0.0",
+	"steps": [
+		{
+			"title": "--- Step 1. Export the Directory Profile Domino IQ fields ---",
+			"databases": [
+				{
+					"action": "export",
+					"filePath": "names.nsf",
+					"documents": [
+						{
+							"action": "export",
+							"filePath": "JavaAddin/Genesis/jsonresponse/domino_iq_directory_profile.txt",
+							"search": {
+								"formula": "Type=\"Server\" & ServerName=\"{{ domino_iq_server_name }}\""
+							},
+							"evaluate": "\"DomIQServers=\"+@Implode(@GetProfileField(\"DirectoryProfile\"; \"DomIQServers\"); \",\")+\" DomIQAdminServer=\"+@Text(@GetProfileField(\"DirectoryProfile\"; \"DomIQAdminServer\"))"
+						}
+					]
+				}
+			]
+		}
+	]
+}

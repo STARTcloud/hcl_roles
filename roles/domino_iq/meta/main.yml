@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: domino_iq
+  author: MarkProminic
+  description: Enable and configure HCL Domino IQ
+  company: STARTCloud
+  license: license (Apache)
+  min_ansible_version: "1.2"
+
+  platforms:
+    - name: Debian
+      versions:
+        - "bookworm"
+
+  galaxy_tags: []
+
+dependencies: []

@@ -1,0 +1,24 @@
+{
+	"title": "Enabling Domino IQ servers in the Directory Profile",
+	"versionjson": "1.0.0",
+	"steps": [
+		{
+			"title": "--- Step 1. Update the Directory Profile Domino IQ fields ---",
+			"databases": [
+				{
+					"action": "update",
+					"filePath": "names.nsf",
+					"documents": [
+						{
+							"action": "update",
+							"search": {
+								"formula": "Type=\"Server\" & ServerName=\"{{ domino_iq_server_name }}\""
+							},
+							"evaluate": "@SetProfileField(\"DirectoryProfile\"; \"ServersOrGroup\"; \"1\"); @SetProfileField(\"DirectoryProfile\"; \"DomIQServers\"; @Trim(@Unique(@GetProfileField(\"DirectoryProfile\"; \"DomIQServers\") : {% for server in domino_iq_servers %}\"{{ server }}\"{% if not loop.last %} : {% endif %}{% endfor %}))); @If(@GetProfileField(\"DirectoryProfile\"; \"DomIQAdminServer\") = \"\"; @SetProfileField(\"DirectoryProfile\"; \"DomIQAdminServer\"; \"{{ domino_iq_admin_server }}\"); \"\")"
+						}
+					]
+				}
+			]
+		}
+	]
+}

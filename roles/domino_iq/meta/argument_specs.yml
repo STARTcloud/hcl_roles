@@ -1,0 +1,106 @@
+---
+argument_specs:
+  main:
+    short_description: Enable and configure HCL Domino IQ
+    description:
+      - Installs the Domino IQ Llama Server add-on, lists the server in the Directory Profile, and creates the dominoiq.nsf Configuration document for a remote or local AI endpoint.
+    author: MarkProminic
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_iq_debug:
+        type: bool
+        default: false
+        description: Prints the server task list after Domino IQ is configured.
+      domino_iq_mode:
+        type: str
+        default: remote
+        choices:
+          - remote
+          - local
+        description: AI endpoint mode of the Configuration document; local needs an NVIDIA GPU on the server.
+      domino_iq_server_name:
+        type: str
+        description: Canonical name of this Domino server, written to the Configuration document AccountName item.
+      domino_iq_servers:
+        type: list
+        elements: str
+        description: Canonical server names added to the Directory Profile DomIQServers item.
+      domino_iq_admin_server:
+        type: str
+        description: Canonical name written to the Directory Profile DomIQAdminServer item when it is empty.
+      domino_iq_directory_profile_update:
+        type: bool
+        description: Whether this server writes the Directory Profile; false on additional servers, which take the profile by replication.
+      domino_iq_endpoint_url:
+        type: str
+        default: https://webui.assistant.prominic.net/api/chat/completions
+        description: HTTPS chat completions URL of the remote AI endpoint.
+      domino_iq_model:
+        type: str
+        default: llama3.1:latest
+        description: Model name the AI endpoint serves; in local mode also the LLM Model document name.
+      domino_iq_api_key:
+        type: str
+        description: API key for the remote AI endpoint, read from secrets.domino_iq_api_key.
+      domino_iq_use_max_completion_tokens:
+        type: bool
+        default: false
+        description: Adds DOMIQ_USE_MAX_COMPLETION_TOKENS=1 to notes.ini for GPT-5.1 style remote models.
+      domino_iq_trusted_root_files:
+        type: list
+        elements: str
+        default: []
+        description: PEM files on the guest imported into certstore.nsf as trusted roots for the remote AI endpoint.
+      domino_iq_configuration_create:
+        type: bool
+        default: true
+        description: Creates the Configuration document; set false by the role when one already exists for this server.
+      domino_iq_llm_model_create:
+        type: bool
+        default: true
+        description: Creates the LLM Model document; set false by the role when one already exists for the model.
+      domino_iq_llama_server_app:
+        type: str
+        default: Domino-IQ
+        description: BoxVault product of the Domino IQ Llama Server archive.
+      domino_iq_llama_server_version:
+        type: str
+        default: "2025.08"
+        description: BoxVault release of the Domino IQ Llama Server archive.
+      domino_iq_llama_server_variant:
+        type: str
+        default: release
+        description: BoxVault patch of the Domino IQ Llama Server archive.
+      domino_iq_llama_server_archive:
+        type: str
+        default: LlamaServerforDominoIQ_061726_Linux.zip
+        description: File name of the Domino IQ Llama Server archive extracted into the Domino program directory.
+      domino_iq_local_use_tls:
+        type: bool
+        default: false
+        description: Local mode only, whether the local AI engine listens with TLS.
+      domino_iq_local_port:
+        type: int
+        description: Local mode only, port of the local AI engine; 8080 without TLS and 8443 with TLS.
+      domino_iq_local_model_app:
+        type: str
+        default: Domino-IQ
+        description: Local mode only, BoxVault product of the GGUF model.
+      domino_iq_local_model_version:
+        type: str
+        default: "2025.08"
+        description: Local mode only, BoxVault release of the GGUF model.
+      domino_iq_local_model_variant:
+        type: str
+        default: release
+        description: Local mode only, BoxVault patch of the GGUF model.
+      domino_iq_local_model_archive:
+        type: str
+        default: ""
+        description: Local mode only, GGUF file name placed in the llm_models directory.
+      domino_iq_local_model_description:
+        type: str
+        description: Local mode only, description of the LLM Model document.

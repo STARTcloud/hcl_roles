@@ -1,0 +1,69 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the extracted llama-server"
+      ansible.builtin.stat:
+        path: /opt/hcl/domino/notes/latest/linux/llama-server
+      register: domino_iq_llama_server
+
+    - name: "Assert llama-server was extracted into the Domino program directory as root and executable"
+      ansible.builtin.assert:
+        that:
+          - domino_iq_llama_server.stat.exists
+          - domino_iq_llama_server.stat.pw_name == 'root'
+          - domino_iq_llama_server.stat.xusr
+          - domino_iq_llama_server.stat.xoth
+        fail_msg: "llama-server was not extracted root-owned and executable into /opt/hcl/domino/notes/latest/linux"
+
+    - name: "Read the Directory Profile JSON handed to Genesis"
+      ansible.builtin.slurp:
+        src: /local/notesdata/JavaAddin/Genesis/json/domino_iq_directory_profile.json
+      register: domino_iq_directory_profile_raw
+
+    - name: "Assert the Directory Profile JSON parses and lists this server"
+      ansible.builtin.assert:
+        that:
+          - domino_iq_profile_document.action == 'update'
+          - "'ServerName=\"CN=startcloud-domino-iq/O=STARTcloud\"' in domino_iq_profile_document.search.formula"
+          - "'\"DomIQServers\"' in domino_iq_profile_document.evaluate"
+          - "'\"DomIQAdminServer\"' in domino_iq_profile_document.evaluate"
+          - "'\"CN=startcloud-domino-iq/O=STARTcloud\"' in domino_iq_profile_document.evaluate"
+        fail_msg: "domino_iq_directory_profile.json is not the expected Genesis update"
+      vars:
+        domino_iq_profile_document: "{{ (domino_iq_directory_profile_raw.content | b64decode | from_json).steps[0].databases[0].documents[0] }}"
+
+    - name: "Read the Configuration JSON handed to Genesis"
+      ansible.builtin.slurp:
+        src: /local/notesdata/JavaAddin/Genesis/json/domino_iq_configuration.json
+      register: domino_iq_configuration_raw
+
+    - name: "Assert the Configuration JSON parses and creates a remote LLMProvider document"
+      ansible.builtin.assert:
+        that:
+          - domino_iq_configuration_database.filePath == 'dominoiq.nsf'
+          - domino_iq_configuration_document.action == 'create'
+          - domino_iq_configuration_document['items']['Form'] == 'LLMProvider'
+          - domino_iq_configuration_document['items']['AccountName'] == 'CN=startcloud-domino-iq/O=STARTcloud'
+          - domino_iq_configuration_document['items']['Status'] == '1'
+          - domino_iq_configuration_document['items']['DomIQ_endpointmode'] == '1'
+          - domino_iq_configuration_document['items']['command_model'] == 'llama3.1:latest'
+          - domino_iq_configuration_document['items']['DomIQ_ProviderURL'] == 'https://webui.assistant.prominic.net/api/chat/completions'
+          - domino_iq_configuration_document['items']['DomIQ_provider_APIKey'] == 'molecule-api-key'
+        fail_msg: "domino_iq_configuration.json is not the expected Genesis create"
+      vars:
+        domino_iq_configuration_database: "{{ (domino_iq_configuration_raw.content | b64decode | from_json).steps[0].databases[0] }}"
+        domino_iq_configuration_document: "{{ domino_iq_configuration_database.documents[0] }}"
+
+    - name: "Stat the Domino IQ configured marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/domino_iq_configured
+      register: domino_iq_marker
+
+    - name: "Assert the role marked Domino IQ as configured"
+      ansible.builtin.assert:
+        that:
+          - domino_iq_marker.stat.exists
+        fail_msg: "/vagrant/completed/domino_iq_configured was not written"

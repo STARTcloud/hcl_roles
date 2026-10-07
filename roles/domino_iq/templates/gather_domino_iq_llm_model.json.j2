@@ -1,0 +1,25 @@
+{
+	"title": "Gathering the Domino IQ LLM Model document",
+	"versionjson": "1.0.0",
+	"steps": [
+		{
+			"title": "--- Step 1. Export the Domino IQ LLM Model document ---",
+			"databases": [
+				{
+					"action": "export",
+					"filePath": "dominoiq.nsf",
+					"documents": [
+						{
+							"action": "export",
+							"filePath": "JavaAddin/Genesis/jsonresponse/domino_iq_llm_model.txt",
+							"search": {
+								"formula": "Form=\"LLMModel\" & ModelName=\"{{ domino_iq_model }}\""
+							},
+							"evaluate": "\"ModelName=\"+ModelName"
+						}
+					]
+				}
+			]
+		}
+	]
+}

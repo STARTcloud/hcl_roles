@@ -35,6 +35,7 @@ jobs:
         role:
           - domino_cross_certify
           - domino_genesis
+          - domino_iq
           - domino_java_app_example
           - domino_java_config
           - domino_java_tools

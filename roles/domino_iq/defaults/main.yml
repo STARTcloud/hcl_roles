@@ -1,0 +1,29 @@
+---
+run_tasks: true
+domino_iq_debug: false
+domino_iq_mode: remote
+domino_iq_server_name: "CN={{ domino_server_name_common }}/O={{ domino_organization }}{{ domino_country_suffix | default('') }}"
+domino_iq_servers:
+  - "{{ domino_iq_server_name }}"
+domino_iq_admin_server: "{{ domino_iq_server_name }}"
+domino_iq_directory_profile_update: "{{ not (is_additional_server | default(false)) }}"
+domino_iq_endpoint_url: "https://webui.assistant.prominic.net/api/chat/completions"
+domino_iq_model: "llama3.1:latest"
+domino_iq_api_key: "{{ (secrets | default({})).get('domino_iq_api_key', '') }}"
+domino_iq_use_max_completion_tokens: false
+domino_iq_trusted_root_files: []
+domino_iq_configuration_create: true
+domino_iq_llm_model_create: true
+
+domino_iq_llama_server_app: Domino-IQ
+domino_iq_llama_server_version: "2025.08"
+domino_iq_llama_server_variant: release
+domino_iq_llama_server_archive: LlamaServerforDominoIQ_061726_Linux.zip
+
+domino_iq_local_use_tls: false
+domino_iq_local_port: "{{ 8443 if domino_iq_local_use_tls else 8080 }}"
+domino_iq_local_model_app: Domino-IQ
+domino_iq_local_model_version: "2025.08"
+domino_iq_local_model_variant: release
+domino_iq_local_model_archive: ""
+domino_iq_local_model_description: "{{ domino_iq_model }}"
