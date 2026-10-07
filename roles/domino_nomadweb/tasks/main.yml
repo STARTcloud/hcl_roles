@@ -11,7 +11,7 @@
           %}nomad-server-{{ nomadweb_version }}-for-domino-{{ domino_major_version }}.0.2-linux.tgz{% elif nomadweb_version is
           version('1.0.16', '<') %}nomad-server-{{ nomadweb_version }}-linux.tar.gz{% else %}HCL_Nomad_server_{{ nomadweb_version
           }}_linux.tar.gz{% endif %}"
-        nomad_hotfix_archive: "HCL_Nomad_server_{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.19' }}-{{ nomad_hotfix_version }}_linux.tar.gz"
+        nomad_hotfix_archive: "HCL_Nomad_server_{{ nomadweb_version if (nomadweb_version is not none and nomadweb_version != '') else '1.0.19' }}-{{ nomad_hotfix_version }}_linux.tgz"
 
     - name: "Checking if Nomad is installed by provisioner: {{ nomad_version }}"
       register: nomadweb_installed_check
@@ -55,12 +55,20 @@
             path: "{{ installer_dir }}/nomadweb/archives/{{ nomadweb_archive }}"
             checksum_algorithm: sha256
 
+        - name: "Describing the Nomad download"
+          ansible.builtin.set_fact:
+            installer_file:
+              app: Nomad-Server
+              version: "{{ nomadweb_version }}"
+              variant: release
+              name: "{{ nomadweb_archive }}"
+
         - name: "Downloading Nomad using Bearer token from {{ installer_base_url }}"
           register: nomadwebresult_bearer
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ nomadweb_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/nomadweb/archives/{{ nomadweb_archive }}"
             headers:
               Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -88,7 +96,7 @@
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ nomadweb_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/nomadweb/archives/{{ nomadweb_archive }}"
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
@@ -158,12 +166,20 @@
         - name: "Installing Nomad Hotfix"
           when: not nomadweb_installed_check.stat.exists and nomad_hotfix_install
           block:
+            - name: "Describing the Nomad Hotfix download"
+              ansible.builtin.set_fact:
+                installer_file:
+                  app: Nomad-Server
+                  version: "{{ nomadweb_version }}"
+                  variant: "{{ nomad_hotfix_version }}"
+                  name: "{{ nomad_hotfix_archive }}"
+
             - name: "Downloading Nomad Hotfix using Bearer token from {{ installer_base_url }}"
               register: nomadwebresulthotfix_bearer
               ansible.builtin.get_url:
                 mode: "0755"
                 validate_certs: false
-                url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ nomad_hotfix_archive }}"
+                url: "{{ installer_url }}"
                 dest: "{{ installer_dir }}/nomadweb/archives/{{ nomad_hotfix_archive }}"
                 headers:
                   Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -192,7 +208,7 @@
               ansible.builtin.get_url:
                 mode: "0755"
                 validate_certs: false
-                url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ nomad_hotfix_archive }}"
+                url: "{{ installer_url }}"
                 dest: "{{ installer_dir }}/nomadweb/archives/{{ nomad_hotfix_archive }}"
                 username: "{{ installer_url_user }}"
                 password: "{{ secrets.installer_url_pass }}"

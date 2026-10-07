@@ -24,12 +24,20 @@
         path: "{{ completed_dir }}/sametime_installed"
         checksum_algorithm: sha256
 
+    - name: "Describing the Sametime download"
+      ansible.builtin.set_fact:
+        installer_file:
+          app: Sametime
+          version: "{{ sametime_version }}"
+          variant: release
+          name: "{{ sametime_archive }}"
+
     - name: "Downloading Sametime using Bearer token from {{ installer_base_url }}"
       register: sametimeresult_bearer
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ sametime_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/sametime/archives/{{ sametime_archive }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -52,7 +60,7 @@
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ sametime_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/sametime/archives/{{ sametime_archive }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"

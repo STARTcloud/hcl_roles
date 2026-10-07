@@ -14,7 +14,6 @@ nomadweb_app_switcher_enabled: true
 
 nomad_hotfix_install: false
 nomad_hotfix_version: "IF1"
-installer_url_app_path: "SHI/Nomad"
 domino_nomadweb_port_forwards:
   - guest: 9443
     url: "notes"

@@ -74,9 +74,6 @@ notes_enable_nsl_under_citrix: "1"
 # Move NSL encrypted password file to %AppData% for roaming (SPR# RCCYAVPREM)
 notes_enable_using_appdata_for_roaming: "1"
 
-# Download Settings
-installer_url_app_path: "SHI"
-
 # Cleanup Settings
 notes_cleanup_temp_files: true
 notes_keep_installers: false
@@ -87,7 +84,8 @@ notes_exe_path: "{{ notes_install_dir }}\\notes.exe"
 # MST Transform File
 notes_mst_file: "HCL Notes 14.5 x64.mst"
 
-marvel_client_dll_artifact: mc64-14.5.8.11269.dll
+marvel_client_version: 14.5.7
+marvel_client_dll_artifact: mc64-14.5.7.11267.dll
 marvel_client_dll: mc64.dll
 
 # Marvel Client Configuration
@@ -104,4 +102,3 @@ notes_marvel_client_zap_notes: "1"
 notes_marvel_client_msg_suppress_setup_complete: "1"
 
 notes_14_admin_hack_for_multiuser_single_client: true
-notes_14_admin_hack_for_multiuser_single_client_url_app_path: "SHI/Notes/14-admin-hack"

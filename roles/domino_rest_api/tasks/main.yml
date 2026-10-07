@@ -35,12 +35,20 @@
             path: "{{ installer_dir }}/domino-rest-api/archives/{{ domino_rest_api_archive }}"
             checksum_algorithm: sha256
 
+        - name: "Describing the domino-rest-api download"
+          ansible.builtin.set_fact:
+            installer_file:
+              app: Domino-REST-API
+              version: "{{ domino_rest_api_version }}"
+              variant: release
+              name: "{{ domino_rest_api_archive }}"
+
         - name: "Downloading domino-rest-api using Bearer token from {{ installer_base_url }}"
           register: domino_rest_apiresult_bearer
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_rest_api_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/domino-rest-api/archives/{{ domino_rest_api_archive }}"
             headers:
               Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -62,7 +70,7 @@
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_rest_api_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/domino-rest-api/archives/{{ domino_rest_api_archive }}"
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"

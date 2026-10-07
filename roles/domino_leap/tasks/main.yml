@@ -30,12 +30,20 @@
             path: "{{ installer_dir }}/leap/archives/{{ leap_archive }}"
             checksum_algorithm: sha256
 
+        - name: "Describing the Leap download"
+          ansible.builtin.set_fact:
+            installer_file:
+              app: Domino-Leap
+              version: "{{ leap_version }}"
+              variant: release
+              name: "{{ leap_archive }}"
+
         - name: "Downloading Leap using Bearer token from {{ installer_base_url }}"
           register: leapresult_bearer
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ leap_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/leap/archives/{{ leap_archive }}"
             headers:
               Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -57,7 +65,7 @@
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ leap_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/leap/archives/{{ leap_archive }}"
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"

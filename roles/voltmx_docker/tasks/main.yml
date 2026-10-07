@@ -47,7 +47,7 @@
       register: voltlsresult_bearer
       ansible.builtin.get_url:
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ voltmx_installer_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/voltmx/archives/{{ voltmx_installer_archive }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -70,7 +70,7 @@
       retries: 3
       ansible.builtin.get_url:
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ voltmx_installer_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/voltmx/archives/{{ voltmx_installer_archive }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"

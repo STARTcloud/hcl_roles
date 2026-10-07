@@ -1,10 +1,15 @@
 ---
 run_tasks: true
 
-installer_url_app_path: "SHI/VoltMXGo"
+voltmx_go_version: 2.1.1
 
 # Download File
-voltmx_go_installer_archive: HCLVoltMXGO_Plugin_Installer_Tool_Linux_V2.1.tar.gz
+voltmx_go_installer_archive: "HCLVoltMXGO_Plugin_Installer_Tool_Linux_V{{ voltmx_go_version }}.tar.gz"
+installer_file:
+  app: VoltMXGo
+  version: "{{ voltmx_go_version }}"
+  variant: release
+  name: "{{ voltmx_go_installer_archive }}"
 
 # Extracted VoltMX Go Plugin Installer
 voltmx_go_plugin_installer_bin: "VoltMXGoInstallationTool-9.5.18.3.bin"

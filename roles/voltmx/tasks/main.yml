@@ -108,12 +108,20 @@
         path: "{{ installer_dir }}/voltmx/core/VoltFoundry_Installer_Linux"
         checksum_algorithm: sha256
 
+    - name: "Describing the VoltMX download"
+      ansible.builtin.set_fact:
+        installer_file:
+          app: VoltMX
+          version: "{{ voltmx_intaller_version.split('.')[:3] | join('.') }}"
+          variant: release
+          name: "{{ voltmx_installer_archive }}"
+
     - name: "Downloading VoltMX using Bearer token from {{ installer_base_url }}"
       register: voltlsresult_bearer
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ voltmx_installer_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/voltmx/archives/{{ voltmx_installer_archive }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -137,7 +145,7 @@
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ voltmx_installer_archive }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/voltmx/archives/{{ voltmx_installer_archive }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"

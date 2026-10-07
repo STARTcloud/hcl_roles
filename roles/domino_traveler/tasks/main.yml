@@ -27,12 +27,20 @@
             path: "{{ installer_dir }}/traveler/archives/{{ traveler_archive }}"
             checksum_algorithm: sha256
 
+        - name: "Describing the Traveler download"
+          ansible.builtin.set_fact:
+            installer_file:
+              app: Traveler
+              version: "{{ traveler_version }}"
+              variant: release
+              name: "{{ traveler_archive }}"
+
         - name: "Downloading Traveler using Bearer token from {{ installer_base_url }}"
           register: travelerresult_bearer
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ traveler_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/traveler/archives/{{ traveler_archive }}"
             headers:
               Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -54,7 +62,7 @@
           ansible.builtin.get_url:
             mode: "0755"
             validate_certs: false
-            url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ traveler_archive }}"
+            url: "{{ installer_url }}"
             dest: "{{ installer_dir }}/traveler/archives/{{ traveler_archive }}"
             username: "{{ installer_url_user }}"
             password: "{{ secrets.installer_url_pass }}"
@@ -125,12 +133,20 @@
                 path: "{{ installer_dir }}/traveler/archives/{{ traveler_fixpack_archive }}"
                 checksum_algorithm: sha256
 
+            - name: "Describing the Traveler FP download"
+              ansible.builtin.set_fact:
+                installer_file:
+                  app: Traveler
+                  version: "{{ traveler_version }}"
+                  variant: "{{ traveler_fixpack_version }}"
+                  name: "{{ traveler_fixpack_archive }}"
+
             - name: "Downloading Traveler FP using Bearer token from {{ installer_base_url }}"
               register: travelerfpresult_bearer
               ansible.builtin.get_url:
                 mode: "0755"
                 validate_certs: false
-                url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ traveler_fixpack_archive }}"
+                url: "{{ installer_url }}"
                 dest: "{{ installer_dir }}/traveler/archives/{{ traveler_fixpack_archive }}"
                 headers:
                   Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -152,7 +168,7 @@
               ansible.builtin.get_url:
                 mode: "0755"
                 validate_certs: false
-                url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ traveler_fixpack_archive }}"
+                url: "{{ installer_url }}"
                 dest: "{{ installer_dir }}/traveler/archives/{{ traveler_fixpack_archive }}"
                 username: "{{ installer_url_user }}"
                 password: "{{ secrets.installer_url_pass }}"
@@ -164,7 +180,7 @@
                 mode: "a+x"
                 owner: "{{ domino_user }}"
                 group: "{{ domino_group }}"
-                src: "{{ installer_dir }}/traveler/archives/{{ traveler_archive }}"
+                src: "{{ installer_dir }}/traveler/archives/{{ traveler_fixpack_archive }}"
                 dest: "{{ installer_dir }}/traveler/Traveler_{{ traveler_fixpack_version }}"
                 creates: "{{ installer_dir }}/traveler/Traveler_{{ traveler_fixpack_version }}/Traveler"
                 remote_src: true

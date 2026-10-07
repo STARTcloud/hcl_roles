@@ -33,6 +33,14 @@
         path: "{{ domino_home_dir }}/notes.ini"
         checksum_algorithm: sha256
 
+    - name: "Describing the Domino download"
+      ansible.builtin.set_fact:
+        installer_file:
+          app: Domino
+          version: "{{ domino_version_string }}"
+          variant: "{{ domino_ea_version if domino_installer_ea_install else 'release' }}"
+          name: "{{ domino_server_installer_tar }}"
+
     - name: "Downloading Domino using Bearer token from {{ installer_base_url }}"
       register: domlsresult_bearer
       until: "domlsresult_bearer is not failed"
@@ -41,7 +49,7 @@
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_installer_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -95,7 +103,7 @@
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_installer_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -135,7 +143,7 @@
       ansible.builtin.get_url:
         mode: "0755"
         validate_certs: false
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_installer_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_installer_tar }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
@@ -169,12 +177,20 @@
         path: "{{ completed_dir }}/fpinstalled"
         checksum_algorithm: sha256
 
+    - name: "Describing the Domino Fixpack download"
+      ansible.builtin.set_fact:
+        installer_file:
+          app: Domino
+          version: "{{ domino_version_string }}"
+          variant: "{{ domino_fixpack_version }}"
+          name: "{{ domino_server_fixpack_tar }}"
+
     - name: "Downloading Domino Fixpack using Bearer token from {{ installer_base_url }}"
       register: fplsresult_bearer
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_fixpack_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_fixpack_tar }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -199,7 +215,7 @@
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_fixpack_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_fixpack_tar }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"
@@ -235,12 +251,20 @@
         path: "{{ completed_dir }}/hfinstalled"
         checksum_algorithm: sha256
 
+    - name: "Describing the Domino hotfix download"
+      ansible.builtin.set_fact:
+        installer_file:
+          app: Domino
+          version: "{{ domino_version_string }}"
+          variant: "{{ domino_fixpack_version ~ domino_hotfix_version if domino_installer_fixpack_install else domino_hotfix_version }}"
+          name: "{{ domino_server_hotfix_tar }}"
+
     - name: "Downloading Domino hotfix using Bearer token from {{ installer_base_url }}"
       register: hflsresult_bearer
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_hotfix_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_hotfix_tar }}"
         headers:
           Authorization: "Bearer {{ secrets.installer_url_bearer }}"
@@ -265,7 +289,7 @@
       ansible.builtin.get_url:
         validate_certs: false
         mode: "0755"
-        url: "{{ installer_base_url }}/{{ installer_url_app_path }}/{{ domino_server_hotfix_tar }}"
+        url: "{{ installer_url }}"
         dest: "{{ installer_dir }}/domino/archives/{{ domino_server_hotfix_tar }}"
         username: "{{ installer_url_user }}"
         password: "{{ secrets.installer_url_pass }}"

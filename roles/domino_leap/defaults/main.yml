@@ -19,7 +19,6 @@ leap_build_map:
 # Archive determined by set_fact in tasks/main.yml
 
 leap_debug: false
-installer_url_app_path: "SHI/Leap"
 domino_leap_port_forwards:
   - guest: "{{ domino_install_port_forwards[0].guest }}"
     url: "leap"

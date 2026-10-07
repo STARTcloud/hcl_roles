@@ -2,8 +2,14 @@
 run_tasks: true
 voltmx_installation_type: Development
 voltmx_installation_dir: /local/voltmx-foundry
+voltmx_intaller_version: 9.5.1
+voltmx_installer_variant: HF1
 voltmx_installer_archive: VoltMXFoundrySetup-9.5.1.1_GA.tar.gz
-installer_base_url: https://mydomain.com
+installer_file:
+  app: VoltMX
+  version: "{{ voltmx_intaller_version }}"
+  variant: "{{ voltmx_installer_variant }}"
+  name: "{{ voltmx_installer_archive }}"
 voltmx_admin_first_name: VoltMX
 voltmx_admin_last_name: Admin
 voltmx_admin_email: "{{ email }} | default('support@startcloud.com')"

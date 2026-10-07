@@ -39,19 +39,20 @@ domino_version_string: "{{ domino_major_version | string + '.' + domino_minor_ve
 domino_ea_version: "EA2"
 domino_installer_ea_install: false
 domino_server_installer_tar: >-
-  {{ 'Domino_' + domino_major_version | string + '.' + domino_minor_version | string + '_Linux_English'
+  {{ 'Domino_' + domino_major_version | string + '.' + domino_minor_version | string
+  + ('.' + domino_patch_version | string if domino_patch_version | string != '0' else '') + '_Linux_English'
   + ('_' + domino_ea_version | string if domino_installer_ea_install else '') + '.tar' }}
 domino_notesini_servertasks: "replica,router,update,amgr,adminp,certmgr,http,nomad"
 domino_installer_fixpack_install: false
-domino_fixpack_version: FP3
+domino_fixpack_version: FP1
 domino_server_fixpack_tar: >-
   {{ 'Domino_140FP1_Linux.tar' if domino_major_version == '14' and domino_minor_version == '0' and domino_patch_version == '0' and domino_fixpack_version == 'FP1'
   else 'Domino_' + domino_major_version | string + domino_minor_version | string + domino_patch_version | string + domino_fixpack_version | string + '_Linux.tar' }}
 domino_installer_hotfix_install: false
-domino_hotfix_version: HF16
-domino_server_hotfix_tar: "{{ domino_major_version | string + domino_minor_version | string + domino_fixpack_version | string + domino_hotfix_version | string + '-linux64.tar' }}"
-installer_url_app_path: "SHI/Domino"
-installer_base_url: "{{ secrets.installer_base_url | default('https://downloads.prominic.net') }}"
+domino_hotfix_version: HF42
+domino_server_hotfix_tar: >-
+  {{ domino_major_version | string + domino_minor_version | string + domino_patch_version | string
+  + (domino_fixpack_version | string if domino_installer_fixpack_install else '') + domino_hotfix_version | string + '-linux64.tar' }}
 domino_install_dir: /opt/hcl/domino/notes/latest/linux
 domino_install_basedir: /opt/hcl/domino
 domino_install_chosen_feature_list: Domino,Nomad,OnTime,Verse,Help
