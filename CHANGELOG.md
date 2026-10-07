@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.3](https://github.com/STARTcloud/hcl_roles/compare/v0.2.2...v0.2.3) (2026-10-07)
+
+
+### Bug Fixes
+
+* dispatch collection releases to the VoltMX Go and Windows provisioners ([abec1b5](https://github.com/STARTcloud/hcl_roles/commit/abec1b5d5f2fb936cb83a4695bf22fc5cd609149))
+* installer url changes ([d5942d2](https://github.com/STARTcloud/hcl_roles/commit/d5942d2fa66ea4eb103e0b16f87395c57c559e07))
+
 ## [0.2.2](https://github.com/STARTcloud/hcl_roles/compare/v0.2.1...v0.2.2) (2026-09-10)
 
 
