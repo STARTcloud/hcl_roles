@@ -140,6 +140,8 @@ jobs:
           - STARTcloud/hcl_domino_standalone_provisioner
           - STARTcloud/hcl_domino_additional_provisioner
           - Moonshine-IDE/moonshinedev_provisioner_private
+          - STARTcloud/hcl_voltmx_go_provisioner
+          - STARTcloud/windows_provisioner
     steps:
       - name: Split owner and repo
         id: target
