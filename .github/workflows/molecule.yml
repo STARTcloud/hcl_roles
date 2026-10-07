@@ -33,7 +33,16 @@ jobs:
       fail-fast: false
       matrix:
         role:
+          - domino_cross_certify
+          - domino_genesis
+          - domino_java_app_example
+          - domino_java_config
+          - domino_java_tools
+          - domino_oidc
+          - domino_reset
+          - domino_service_nash
           - domino_vagrant_readme
+          - domino_vagrant_rest_api
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -51,6 +60,10 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
+          INSTALLER_BASE_URL: ${{ secrets.INSTALLER_BASE_URL }}
+          INSTALLER_URL_USER: ${{ secrets.INSTALLER_URL_USER }}
+          INSTALLER_URL_PASS: ${{ secrets.INSTALLER_URL_PASS }}
+          INSTALLER_URL_BEARER: ${{ secrets.INSTALLER_URL_BEARER }}
         run: molecule test
 
   # Single aggregate check so branch protection / auto-merge can require one

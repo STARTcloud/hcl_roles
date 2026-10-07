@@ -1,0 +1,28 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    run_tasks: true
+    settings:
+      hostname: startcloud-domino-vagrant-rest-api
+      domain: molecule.test
+    secrets:
+      installer_base_url: "{{ lookup('env', 'INSTALLER_BASE_URL') }}"
+      installer_url_user: "{{ lookup('env', 'INSTALLER_URL_USER') }}"
+      installer_url_pass: "{{ lookup('env', 'INSTALLER_URL_PASS') }}"
+      installer_url_bearer: "{{ lookup('env', 'INSTALLER_URL_BEARER') }}"
+    installer_dir: /vagrant/installers
+    service_user: startcloud
+    service_group: startcloud
+    service_home_dir: /home/startcloud
+    domino_user: startcloud
+    domino_group: startcloud
+    domino_home_dir: /local/notesdata
+    domino_install_dir: /opt/hcl/domino/notes/latest/linux
+    domino_organization: STARTcloud
+    domino_admin_user_first_name: Molecule
+    domino_admin_user_last_name: Admin
+    domino_server_name_common_with_org: startcloud-domino-vagrant-rest-api/STARTcloud
+  roles:
+    - role: domino_vagrant_rest_api

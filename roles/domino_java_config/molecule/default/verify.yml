@@ -1,0 +1,58 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the templated notes.ini"
+      ansible.builtin.stat:
+        path: /home/startcloud/notes.ini
+      register: java_config_notes_ini
+
+    - name: "Assert notes.ini was placed in the service home as startcloud with mode 0744"
+      ansible.builtin.assert:
+        that:
+          - java_config_notes_ini.stat.exists
+          - java_config_notes_ini.stat.isreg
+          - java_config_notes_ini.stat.pw_name == 'startcloud'
+          - java_config_notes_ini.stat.gr_name == 'startcloud'
+          - java_config_notes_ini.stat.mode == '0744'
+        fail_msg: "/home/startcloud/notes.ini missing or with the wrong owner/mode"
+
+    - name: "Read the templated notes.ini"
+      ansible.builtin.slurp:
+        src: /home/startcloud/notes.ini
+      register: java_config_notes_ini_raw
+
+    - name: "Assert notes.ini carries the service directory and admin key file"
+      ansible.builtin.assert:
+        that:
+          - "'Directory=/home/startcloud' in java_config_notes_ini_body"
+          - "'KeyFilename=/local/notesdata/ids/admin-user.id' in java_config_notes_ini_body"
+          - "'KitType=1' in java_config_notes_ini_body"
+        fail_msg: "notes.ini was not rendered from notes.ini.j2 with the play variables"
+      vars:
+        java_config_notes_ini_body: "{{ java_config_notes_ini_raw.content | b64decode }}"
+
+    - name: "Read the service user's .bash_profile"
+      ansible.builtin.slurp:
+        src: /home/startcloud/.bash_profile
+      register: java_config_bash_profile
+
+    - name: "Assert LD_LIBRARY_PATH points at the Domino install directory"
+      ansible.builtin.assert:
+        that:
+          - "'export LD_LIBRARY_PATH=/opt/hcl/domino/notes/latest/linux/' in (java_config_bash_profile.content | b64decode)"
+        fail_msg: ".bash_profile does not export LD_LIBRARY_PATH for the Domino install directory"
+
+    - name: "Stat the copied pernames.ntf"
+      ansible.builtin.stat:
+        path: /home/startcloud/pernames.ntf
+      register: java_config_pernames
+
+    - name: "Assert pernames.ntf was copied from the Domino data directory and owned by startcloud"
+      ansible.builtin.assert:
+        that:
+          - java_config_pernames.stat.exists
+          - java_config_pernames.stat.pw_name == 'startcloud'
+        fail_msg: "/home/startcloud/pernames.ntf was not copied from /local/notesdata"

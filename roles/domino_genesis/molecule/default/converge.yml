@@ -1,0 +1,20 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    run_tasks: true
+    debug_all: false
+    secrets:
+      installer_base_url: "{{ lookup('env', 'INSTALLER_BASE_URL') }}"
+      installer_url_user: "{{ lookup('env', 'INSTALLER_URL_USER') }}"
+      installer_url_pass: "{{ lookup('env', 'INSTALLER_URL_PASS') }}"
+      installer_url_bearer: "{{ lookup('env', 'INSTALLER_URL_BEARER') }}"
+    completed_dir: /vagrant/completed
+    domino_user: startcloud
+    domino_group: startcloud
+    domino_home_dir: /local/notesdata
+    domino_shutdown_delay: 0
+    domino_startup_delay: 0
+  roles:
+    - role: domino_genesis

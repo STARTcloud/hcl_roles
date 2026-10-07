@@ -1,0 +1,63 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the Java build tools directories"
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: java_tools_dirs
+      loop:
+        - /vagrant/installers/domino-java-helpers/src/main/java/net/prominic/domino/vagrant
+        - /vagrant/installers/domino-java-helpers/build
+        - /vagrant/installers/domino-java-helpers/dxl
+
+    - name: "Assert every build tools directory exists and is owned by startcloud"
+      ansible.builtin.assert:
+        that:
+          - item.stat.isdir
+          - item.stat.pw_name == 'startcloud'
+          - item.stat.gr_name == 'startcloud'
+        fail_msg: "{{ item.item }} is not a startcloud-owned directory"
+      loop: "{{ java_tools_dirs.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Stat the templated gradle.properties"
+      ansible.builtin.stat:
+        path: /vagrant/installers/domino-java-helpers/gradle.properties
+      register: java_tools_gradle_properties
+
+    - name: "Assert gradle.properties was placed for startcloud"
+      ansible.builtin.assert:
+        that:
+          - java_tools_gradle_properties.stat.exists
+          - java_tools_gradle_properties.stat.pw_name == 'startcloud'
+          - java_tools_gradle_properties.stat.mode == '0644'
+        fail_msg: "gradle.properties missing or with the wrong owner/mode"
+
+    - name: "Read the templated gradle.properties"
+      ansible.builtin.slurp:
+        src: /vagrant/installers/domino-java-helpers/gradle.properties
+      register: java_tools_gradle_properties_raw
+
+    - name: "Assert gradle.properties points the build at the Domino install"
+      ansible.builtin.assert:
+        that:
+          - "'notesInstallation=/opt/hcl/domino/notes/latest/linux' in java_tools_gradle_body"
+          - "'org.gradle.java.installations.auto-download=false' in java_tools_gradle_body"
+        fail_msg: "gradle.properties was not rendered from gradle.properties.j2"
+      vars:
+        java_tools_gradle_body: "{{ java_tools_gradle_properties_raw.content | b64decode }}"
+
+    - name: "Stat the build marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/javabuildtools
+      register: java_tools_marker
+
+    - name: "Assert the jars were not marked as built while build_utility_jars is off"
+      ansible.builtin.assert:
+        that:
+          - not java_tools_marker.stat.exists
+        fail_msg: "/vagrant/completed/javabuildtools exists although build_utility_jars is false"

@@ -1,0 +1,24 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    run_tasks: true
+    settings:
+      hostname: startcloud-domino-oidc
+      domain: molecule.test
+    secrets:
+      installer_base_url: "{{ lookup('env', 'INSTALLER_BASE_URL') }}"
+      installer_url_user: "{{ lookup('env', 'INSTALLER_URL_USER') }}"
+      installer_url_pass: "{{ lookup('env', 'INSTALLER_URL_PASS') }}"
+      installer_url_bearer: "{{ lookup('env', 'INSTALLER_URL_BEARER') }}"
+    completed_dir: /vagrant/completed
+    domino_home_dir: /local/notesdata
+    domino_major_version: 14
+    provision_roles:
+      - name: startcloud.hcl_roles.domino_vagrant_rest_api
+      - name: startcloud.hcl_roles.domino_oidc
+        vars:
+          run_tasks: false
+  roles:
+    - role: domino_oidc

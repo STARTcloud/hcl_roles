@@ -1,0 +1,25 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the cross certification output file"
+      ansible.builtin.stat:
+        path: /vagrant/completed/CrossCertifyNotesID.out
+      register: cross_certify_output
+
+    - name: "Assert no cross certification ran while no safe ID was supplied"
+      ansible.builtin.assert:
+        that:
+          - not cross_certify_output.stat.exists
+        fail_msg: "CrossCertifyNotesID.out exists although no safe ID was present under /id-files"
+
+    - name: "Gather service facts"
+      ansible.builtin.service_facts:
+
+    - name: "Assert the role did not try to start a Domino service"
+      ansible.builtin.assert:
+        that:
+          - "'domino.service' not in ansible_facts.services"
+        fail_msg: "A domino.service appeared although cross certification was skipped"

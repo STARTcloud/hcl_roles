@@ -1,0 +1,53 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: "Creating the Domino data, install and completed directories a provisioned guest carries"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /local/notesdata/ids
+        - /opt/hcl/domino/notes/latest/linux
+        - /vagrant/completed
+
+    - name: "Seeding the notes.ini the role keys its reset on"
+      ansible.builtin.copy:
+        dest: /local/notesdata/notes.ini
+        content: "[Notes]\nDirectory=/local/notesdata\n"
+        mode: "0644"
+
+    - name: "Seeding the completed markers the reset removes"
+      ansible.builtin.copy:
+        dest: "/vagrant/completed/{{ item }}"
+        content: ""
+        mode: "0644"
+      loop:
+        - domsetup
+        - service_configured
+        - javabuildtools
+
+    - name: "Installing a domino unit for the role to stop and disable"
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/domino.service
+        content: |
+          [Unit]
+          Description=Domino stand-in
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          ExecStart=/bin/true
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: "0644"
+
+    - name: "Starting and enabling the domino unit"
+      ansible.builtin.systemd:
+        name: domino
+        state: started
+        enabled: true
+        daemon_reload: true

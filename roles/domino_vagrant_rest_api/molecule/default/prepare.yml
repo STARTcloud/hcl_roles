@@ -1,0 +1,26 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: "Installing the unzip and supervisord prerequisites the role expects"
+      ansible.builtin.apt:
+        name:
+          - unzip
+          - supervisor
+        state: present
+        update_cache: true
+
+    - name: "Creating the startcloud group (normally created by the users role)"
+      ansible.builtin.group:
+        name: startcloud
+        state: present
+
+    - name: "Creating the startcloud user (normally created by the users role)"
+      ansible.builtin.user:
+        name: startcloud
+        group: startcloud
+        home: /home/startcloud
+        shell: /bin/bash
+        create_home: true
+        state: present

@@ -1,0 +1,73 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the start script files the Nash installer places"
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: nash_scripts
+      loop:
+        - /usr/bin/domino
+        - /opt/nashcom/startscript/rc_domino_script
+        - /opt/nashcom/startscript/nshinfo.sh
+        - /domino_docker_entrypoint.sh
+
+    - name: "Assert every start script was installed as an executable"
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.xusr
+        fail_msg: "{{ item.item }} was not installed as an executable by install_script"
+      loop: "{{ nash_scripts.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Read the installed start script configuration"
+      ansible.builtin.slurp:
+        src: /etc/sysconfig/rc_domino_config
+      register: nash_config
+
+    - name: "Assert the configuration was patched to the Domino data directory"
+      ansible.builtin.assert:
+        that:
+          - "'DOMINO_DATA_PATH=/local/notesdata' in (nash_config.content | b64decode)"
+        fail_msg: "/etc/sysconfig/rc_domino_config does not carry DOMINO_DATA_PATH=/local/notesdata"
+
+    - name: "Read the installer script the role patched"
+      ansible.builtin.slurp:
+        src: /vagrant/installers/domino/service-file/domino-startscript/install_script
+      register: nash_install_script
+
+    - name: "Assert the installer was patched to run as the Domino user and group"
+      ansible.builtin.assert:
+        that:
+          - "'  DOMINO_USER=startcloud' in nash_install_body"
+          - "'  DOMINO_GROUP=startcloud' in nash_install_body"
+        fail_msg: "install_script was not patched with domino_user/domino_group"
+      vars:
+        nash_install_body: "{{ nash_install_script.content | b64decode }}"
+
+    - name: "Stat the system databases list installed into the data directory"
+      ansible.builtin.stat:
+        path: /local/notesdata/systemdbs.ind
+      register: nash_systemdbs
+
+    - name: "Assert systemdbs.ind was installed for the Domino user"
+      ansible.builtin.assert:
+        that:
+          - nash_systemdbs.stat.exists
+          - nash_systemdbs.stat.pw_name == 'startcloud'
+        fail_msg: "/local/notesdata/systemdbs.ind missing or not owned by startcloud"
+
+    - name: "Stat the service configured marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/service_configured
+      register: nash_marker
+
+    - name: "Assert the role marked the start script as installed"
+      ansible.builtin.assert:
+        that:
+          - nash_marker.stat.exists
+        fail_msg: "/vagrant/completed/service_configured was not written"

@@ -1,0 +1,119 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    rest_jar: /opt/rest-interface/bin/rest-interface-1.10.0.jar
+  tasks:
+    - name: "Stat the deployed REST Interface jar"
+      ansible.builtin.stat:
+        path: "{{ rest_jar }}"
+      register: rest_jar_stat
+
+    - name: "Assert the jar extracted from the VagrantCRUD archive was deployed and owned by startcloud"
+      ansible.builtin.assert:
+        that:
+          - rest_jar_stat.stat.exists
+          - rest_jar_stat.stat.isreg
+          - rest_jar_stat.stat.size > 0
+          - rest_jar_stat.stat.pw_name == 'startcloud'
+        fail_msg: "{{ rest_jar }} was not deployed by the role"
+
+    - name: "Read the rendered REST Interface configuration"
+      ansible.builtin.slurp:
+        src: /opt/rest-interface/config/application.yml
+      register: rest_config
+
+    - name: "Assert the configuration carries the server name and base URL"
+      ansible.builtin.assert:
+        that:
+          - "'serverName: startcloud-domino-vagrant-rest-api/STARTcloud' in rest_config_body"
+          - "'baseURL: https://domino.startcloud-domino-vagrant-rest-api.molecule.test' in rest_config_body"
+          - "'upload-database' in rest_config_body"
+        fail_msg: "application.yml was not rendered from rest_config.yml.j2 with the play variables"
+      vars:
+        rest_config_body: "{{ rest_config.content | b64decode }}"
+
+    - name: "Read the rendered systemd unit"
+      ansible.builtin.slurp:
+        src: /etc/systemd/system/restapi.service
+      register: rest_unit
+
+    - name: "Assert the unit runs the versioned jar as startcloud on port 8080"
+      ansible.builtin.assert:
+        that:
+          - "'User=startcloud' in rest_unit_body"
+          - "'-Dserver.port=8080' in rest_unit_body"
+          - "'-jar /opt/rest-interface/bin/rest-interface-1.10.0.jar' in rest_unit_body"
+          - "'EnvironmentFile=/opt/rest-interface/environment' in rest_unit_body"
+        fail_msg: "restapi.service was not rendered with the expected user, port and jar"
+      vars:
+        rest_unit_body: "{{ rest_unit.content | b64decode }}"
+
+    - name: "Read the rendered supervisord program definition"
+      ansible.builtin.slurp:
+        src: /etc/supervisor/conf.d/supervisord.restapi.conf
+      register: rest_supervisord
+
+    - name: "Assert the container-mode supervisord program launches the jar"
+      ansible.builtin.assert:
+        that:
+          - "'[program:restapi]' in rest_supervisord_body"
+          - "'user=startcloud' in rest_supervisord_body"
+          - "'-jar /opt/rest-interface/bin/rest-interface-1.10.0.jar' in rest_supervisord_body"
+        fail_msg: "supervisord.restapi.conf was not deployed for the container path"
+      vars:
+        rest_supervisord_body: "{{ rest_supervisord.content | b64decode }}"
+
+    - name: "Stat the Domino helper scripts"
+      ansible.builtin.stat:
+        path: "/opt/domino/scripts/{{ item }}"
+      register: rest_scripts
+      loop:
+        - deploy_database.sh
+        - deploy_html.sh
+        - run_dxl_importer.sh
+        - import_json_documents.sh
+
+    - name: "Assert every Domino helper script was deployed as an executable"
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.xusr
+        fail_msg: "/opt/domino/scripts/{{ item.item }} is missing or not executable"
+      loop: "{{ rest_scripts.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Read the rendered DXL importer script"
+      ansible.builtin.slurp:
+        src: /opt/domino/scripts/run_dxl_importer.sh
+      register: rest_dxl_script
+
+    - name: "Assert the DXL importer script points at the Domino install and data paths"
+      ansible.builtin.assert:
+        that:
+          - "'DOMINO_INSTALL_PATH=/opt/hcl/domino/notes/latest/linux' in rest_dxl_body"
+          - "'/local/notesdata/setup.json' in rest_dxl_body"
+        fail_msg: "run_dxl_importer.sh was not rendered with the Domino paths"
+      vars:
+        rest_dxl_body: "{{ rest_dxl_script.content | b64decode }}"
+
+    - name: "Stat the Moonshine-IDE supporting directories"
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: rest_support_dirs
+      loop:
+        - /opt/restinterface/userfiles
+        - /opt/restinterface/public/uploads
+
+    - name: "Assert the supporting directories exist and are owned by startcloud"
+      ansible.builtin.assert:
+        that:
+          - item.stat.isdir
+          - item.stat.pw_name == 'startcloud'
+        fail_msg: "{{ item.item }} is not a startcloud-owned directory"
+      loop: "{{ rest_support_dirs.results }}"
+      loop_control:
+        label: "{{ item.item }}"

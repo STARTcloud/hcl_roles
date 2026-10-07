@@ -1,0 +1,22 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the OIDC configured marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/oidc_configured_check
+      register: oidc_marker
+
+    - name: "Stat the Genesis job directory the OIDC setup writes into"
+      ansible.builtin.stat:
+        path: /local/notesdata/JavaAddin/Genesis/json
+      register: oidc_genesis_json
+
+    - name: "Assert OIDC setup was skipped while domino_oidc is disabled in provision_roles"
+      ansible.builtin.assert:
+        that:
+          - not oidc_marker.stat.exists
+          - not oidc_genesis_json.stat.exists
+        fail_msg: "OIDC setup ran although provision_roles marks domino_oidc run_tasks false"

@@ -1,0 +1,28 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: "Creating the startcloud group (normally created by the users role)"
+      ansible.builtin.group:
+        name: startcloud
+        state: present
+
+    - name: "Creating the startcloud user (normally created by the users role)"
+      ansible.builtin.user:
+        name: startcloud
+        group: startcloud
+        home: /home/startcloud
+        shell: /bin/bash
+        create_home: true
+        state: present
+
+    - name: "Creating the installer and completed directories (normally created by the setup and domino_install roles)"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /vagrant/installers/domino/archives
+        - /vagrant/completed
+        - /local/notesdata

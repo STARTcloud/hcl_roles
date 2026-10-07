@@ -1,0 +1,32 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: "Creating the startcloud group (normally created by the users role)"
+      ansible.builtin.group:
+        name: startcloud
+        state: present
+
+    - name: "Creating the startcloud user (normally created by the users role)"
+      ansible.builtin.user:
+        name: startcloud
+        group: startcloud
+        home: /home/startcloud
+        shell: /bin/bash
+        create_home: true
+        state: present
+
+    - name: "Creating the Domino data directory (normally created by the domino_install role)"
+      ansible.builtin.file:
+        path: /local/notesdata
+        state: directory
+        mode: "0755"
+
+    - name: "Seeding the pernames.ntf template the role copies (normally shipped by the Domino install)"
+      ansible.builtin.copy:
+        dest: /local/notesdata/pernames.ntf
+        content: "molecule pernames.ntf stand-in\n"
+        owner: root
+        group: root
+        mode: "0644"

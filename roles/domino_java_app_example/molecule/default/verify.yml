@@ -1,0 +1,62 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the Domino servlet directory"
+      ansible.builtin.stat:
+        path: /local/notesdata/domino/servlet
+      register: app_example_servlet_dir
+
+    - name: "Assert the Domino servlet directory exists and is owned by the Domino user"
+      ansible.builtin.assert:
+        that:
+          - app_example_servlet_dir.stat.isdir
+          - app_example_servlet_dir.stat.pw_name == 'startcloud'
+        fail_msg: "/local/notesdata/domino/servlet was not created for the Domino user"
+
+    - name: "Stat the rendered example servlet sources"
+      ansible.builtin.stat:
+        path: "/home/startcloud/ExampleServlet/{{ item }}"
+      register: app_example_sources
+      loop:
+        - ExampleServlet.java
+        - build-servlet-example.bsh
+
+    - name: "Assert both example servlet files were rendered as startcloud executables"
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.pw_name == 'startcloud'
+          - item.stat.xusr
+        fail_msg: "/home/startcloud/ExampleServlet/{{ item.item }} missing, not startcloud-owned or not executable"
+      loop: "{{ app_example_sources.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Read the rendered servlet source"
+      ansible.builtin.slurp:
+        src: /home/startcloud/ExampleServlet/ExampleServlet.java
+      register: app_example_java
+
+    - name: "Assert the servlet source is the HttpServlet example"
+      ansible.builtin.assert:
+        that:
+          - "'public class ExampleServlet extends HttpServlet' in (app_example_java.content | b64decode)"
+        fail_msg: "ExampleServlet.java was not rendered from ExampleServlet.java.j2"
+
+    - name: "Read the rendered build script"
+      ansible.builtin.slurp:
+        src: /home/startcloud/ExampleServlet/build-servlet-example.bsh
+      register: app_example_build
+
+    - name: "Assert the build script resolves the Domino classpath and servlet target"
+      ansible.builtin.assert:
+        that:
+          - "'-classpath /opt/hcl/domino/notes/latest/linux/jvm/lib/ext/:/opt/hcl/domino/notes/latest/linux/ndext/jsdk.jar' in app_example_build_body"
+          - "'sudo cp ExampleServlet.class /local/notesdata/domino/servlet' in app_example_build_body"
+          - "'chown -R startcloud:startcloud /local/notesdata/domino/servlet' in app_example_build_body"
+        fail_msg: "build-servlet-example.bsh was not rendered with the Domino paths"
+      vars:
+        app_example_build_body: "{{ app_example_build.content | b64decode }}"

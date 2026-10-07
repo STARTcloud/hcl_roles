@@ -1,0 +1,46 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the Domino paths and markers the reset removes"
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: reset_removed
+      loop:
+        - /local/notesdata
+        - /opt/hcl/domino
+        - /vagrant/completed/domsetup
+        - /vagrant/completed/service_configured
+        - /vagrant/completed/javabuildtools
+
+    - name: "Assert every Domino path and marker was removed"
+      ansible.builtin.assert:
+        that:
+          - not item.stat.exists
+        fail_msg: "{{ item.item }} still exists after the reset"
+      loop: "{{ reset_removed.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Stat the reset marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/domino_reset
+      register: reset_marker
+
+    - name: "Assert the role marked the reset as completed"
+      ansible.builtin.assert:
+        that:
+          - reset_marker.stat.exists
+        fail_msg: "/vagrant/completed/domino_reset was not written"
+
+    - name: "Gather service facts"
+      ansible.builtin.service_facts:
+
+    - name: "Assert the domino unit was stopped and disabled"
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['domino.service'].state == 'inactive'
+          - ansible_facts.services['domino.service'].status == 'disabled'
+        fail_msg: "domino.service is not stopped and disabled: {{ ansible_facts.services['domino.service'] | default('missing') }}"

@@ -1,0 +1,58 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: "Stat the Genesis JavaAddin directories"
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: genesis_dirs
+      loop:
+        - /local/notesdata/JavaAddin/Genesis
+        - /local/notesdata/JavaAddin/Genesis/json
+
+    - name: "Assert the Genesis directories exist and are owned by the Domino user"
+      ansible.builtin.assert:
+        that:
+          - item.stat.isdir
+          - item.stat.pw_name == 'startcloud'
+          - item.stat.gr_name == 'startcloud'
+        fail_msg: "{{ item.item }} is not a startcloud-owned directory"
+      loop: "{{ genesis_dirs.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: "Stat the deployed Genesis jar"
+      ansible.builtin.stat:
+        path: /local/notesdata/JavaAddin/Genesis/Genesis-0.6.20.jar
+      register: genesis_jar
+
+    - name: "Assert the Genesis jar shipped with the role was placed into the JavaAddin folder"
+      ansible.builtin.assert:
+        that:
+          - genesis_jar.stat.exists
+          - genesis_jar.stat.size > 0
+          - genesis_jar.stat.pw_name == 'startcloud'
+          - genesis_jar.stat.mode == '0755'
+        fail_msg: "Genesis-0.6.20.jar was not deployed into /local/notesdata/JavaAddin/Genesis"
+
+    - name: "Stat the Genesis installed marker"
+      ansible.builtin.stat:
+        path: /vagrant/completed/genesis_installed_check
+      register: genesis_marker
+
+    - name: "Assert the role marked Genesis as installed"
+      ansible.builtin.assert:
+        that:
+          - genesis_marker.stat.exists
+        fail_msg: "/vagrant/completed/genesis_installed_check was not written"
+
+    - name: "Gather service facts"
+      ansible.builtin.service_facts:
+
+    - name: "Assert the domino unit was left enabled"
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['domino.service'].status == 'enabled'
+        fail_msg: "domino.service is not enabled: {{ ansible_facts.services['domino.service'] | default('missing') }}"
