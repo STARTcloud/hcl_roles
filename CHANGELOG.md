@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/STARTcloud/hcl_roles/compare/v0.3.0...v0.4.0) (2026-10-07)
+
+
+### Features
+
+* add domino_iq role to enable HCL Domino IQ ([c636933](https://github.com/STARTcloud/hcl_roles/commit/c63693373cb221ee805d10ac46083d5ca2758129))
+
 ## [0.3.0](https://github.com/STARTcloud/hcl_roles/compare/v0.2.3...v0.3.0) (2026-10-07)
 
 
