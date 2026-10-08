@@ -39,4 +39,8 @@ oidc:
     client_id: "{{ domino_oidc_client_id }}_nomad"
     client_secret: "{{ domino_oidc_client_secret }}"
     redirect_uris: ["https://{{ domino_nomadweb_proxy_url }}/login/callback", "https://{{ domino_nomadweb_proxy_url }}/logout/callback"]
+{% if domino_version_string is version('14.5.1', '>=') and nomad_version is version('1.0.20', '<') %}
+  backchannel_logout:
+    enabled: false
+{% endif %}
 {% endif %}
