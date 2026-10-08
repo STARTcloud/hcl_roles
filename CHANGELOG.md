@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/STARTcloud/hcl_roles/compare/v0.4.0...v0.4.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* default Nomad to 1.0.20 and disable backchannel logout only where it crashes ([e398b41](https://github.com/STARTcloud/hcl_roles/commit/e398b411202555bd21dd2beffd7b67f418f336b9))
+* default Nomad to 1.0.21 and disable backchannel logout only where it crashes ([d3b3fd3](https://github.com/STARTcloud/hcl_roles/commit/d3b3fd3291edeab1b677f583885c44643e68f398))
+
 ## [0.4.0](https://github.com/STARTcloud/hcl_roles/compare/v0.3.0...v0.4.0) (2026-10-07)
 
 
