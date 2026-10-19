@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/STARTcloud/hcl_roles/compare/v0.4.1...v0.5.0) (2026-10-19)
+
+
+### Features
+
+* add argument specs to every role ([494ed0d](https://github.com/STARTcloud/hcl_roles/commit/494ed0d71540e54c3b45d688ed4f584c8bf803e3))
+
 ## [0.4.1](https://github.com/STARTcloud/hcl_roles/compare/v0.4.0...v0.4.1) (2026-10-08)
 
 
