@@ -1,0 +1,67 @@
+---
+argument_specs:
+  main:
+    short_description: Configure Domino with One Touch Setup
+    description:
+      - Imports the key ring, renders setup.json and runs Domino One Touch Setup to register and configure the server, then
+        generates any additional server IDs.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      show_help:
+        type: bool
+        default: true
+        description: Whether to display help output during the run.
+      debug_autoconfigure:
+        type: bool
+        default: false
+        description: Print the autoconfigure log and certificate details.
+      domino_server_id:
+        type: str
+        default: server.id
+        description: File name of the server ID under id-files/server-ids on an additional server.
+      domino_server_id_password:
+        type: str
+        default: "null"
+        description: Password of the server ID.
+      use_domino_server_id:
+        type: bool
+        default: true
+        description: Use the supplied server ID instead of generating one.
+      domino_server_id_creation_tool:
+        type: str
+        default: ots
+        choices:
+          - ots
+          - asja
+        description: Tool that generates additional server IDs, One Touch Setup or the Additional Server Java Applet.
+      ots_generate_server_id_count:
+        type: int
+        default: 1
+        description: Number of additional server IDs One Touch Setup generates below Domino 14.
+      ots_generate_server_id_pattern:
+        type: str
+        default: mail
+        description: Name prefix of the generated server IDs below Domino 14.
+      ots_generate_server_names:
+        type: list
+        elements: str
+        description: Fully qualified names of the additional servers One Touch Setup registers on Domino 14 and above.
+      asja_generate_server_ids:
+        type: list
+        elements: dict
+        description: Additional servers the Java applet registers, each with name and pass.
+      origin_server:
+        type: str
+        default: ""
+        description: Hostname of the existing server an additional server joins.
+      origin_server_ip:
+        type: str
+        default: ""
+        description: IP address of the origin server.
+      domino_config:
+        type: dict
+        description: autoConfigPreferences of setup.json, delete_input_file_after_processing and start_server_after_configuration.

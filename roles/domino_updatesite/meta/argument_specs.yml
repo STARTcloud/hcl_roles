@@ -1,0 +1,24 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy the Domino update site
+    description:
+      - Builds the OpenNTF update site database used to install Domino plugins.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      updatesite_repo:
+        type: str
+        default: https://github.com/OpenNTF/generate-domino-update-site
+        description: Git repository of generate-domino-update-site.
+      updatesite_version:
+        type: str
+        default: 6.0.0
+        description: Release of generate-domino-update-site to build with.
+      nsfodp_updatesite_path:
+        type: str
+        default: /opt/nsfodp/updatesite
+        description: Directory the update site is generated into.

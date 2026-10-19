@@ -1,0 +1,20 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy the Java servlet example
+    description:
+      - Builds and deploys an example Domino Java servlet application.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      show_help:
+        type: bool
+        default: true
+        description: Whether to display help output during the run.
+      build_example:
+        type: bool
+        default: true
+        description: Build the example from source.

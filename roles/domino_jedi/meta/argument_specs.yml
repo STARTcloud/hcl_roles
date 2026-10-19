@@ -1,0 +1,116 @@
+---
+argument_specs:
+  main:
+    short_description: Install Jedi
+    description:
+      - Installs the Jedi Domino console service as an alternative to the Nash start script.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      packages:
+        type: list
+        elements: str
+        description: Extra packages installed before Jedi.
+      jedi_enabled:
+        type: bool
+        default: true
+        description: Whether Jedi manages Domino; when false the Nash script does.
+      jedi_service:
+        type: str
+        default: jedi
+        description: systemd service name.
+      prominic_install_dir:
+        type: str
+        default: /opt/prominic
+        description: Base directory Jedi installs under.
+      jedi_install_dir:
+        type: str
+        description: Jedi installation directory; defaults to prominic_install_dir/jedi.
+      jedi_install_lib_dir:
+        type: str
+        description: Jedi library directory; defaults to jedi_install_dir/lib.
+      jedi_install_jar:
+        type: str
+        description: Installed Jedi jar path.
+      jedi_artifact_jar:
+        type: str
+        default: ./jedi.jar
+        description: Local Jedi artifact path.
+      jedi_cfg_dir:
+        type: str
+        description: Jedi configuration directory; defaults to prominic_install_dir/jedi/etc.
+      jedi_user:
+        type: str
+        default: root
+        description: User Jedi runs as.
+      jedi_group:
+        type: str
+        default: root
+        description: Group Jedi runs as.
+      jedi_username:
+        type: str
+        default: startcloud
+        description: Jedi console username.
+      jedi_password:
+        type: str
+        default: STARTcloud24@!
+        description: Jedi console password.
+      jedi_alias:
+        type: dict
+        description: Shell alias for the Domino console, with enabled, alias and command.
+      jedi_server_text_port:
+        type: int
+        default: 1910
+        description: Clear text console port.
+      jedi_server_ssltext_port:
+        type: int
+        default: 1911
+        description: TLS console port.
+      jedi_server_joes_port:
+        type: int
+        default: 1710
+        description: Clear text data port.
+      jedi_server_ssljoes_port:
+        type: int
+        default: 1711
+        description: TLS data port.
+      jedi_noteslog:
+        type: str
+        default: /local/notesdata/noteslog
+        description: Notes log path Jedi reads.
+      jedi_online_zip:
+        type: str
+        default: https://public-artifacts.prominic.net/jedi/jedi.zip
+        description: Download URL of the Jedi archive.
+      jedi_local_zip:
+        type: str
+        default: installers/jedi/archives/jedi.zip
+        description: Local path of the Jedi archive.
+      jedi_local_unpack_dir:
+        type: str
+        description: Directory the Jedi archive unpacks into.
+      jedi_online_jar:
+        type: str
+        default: https://public-artifacts.prominic.net/jedi/jedi.jar
+        description: Download URL of the Jedi jar.
+      jedi_local_jar:
+        type: str
+        default: installers/jedi/archives/jedi.jar
+        description: Local path of the Jedi jar.
+      jedi_domino_autostart:
+        type: bool
+        default: true
+        description: Whether Jedi starts Domino automatically.
+      jedi_ssl_update:
+        type: bool
+        default: true
+        description: Point Jedi's TLS configuration at the instance's JKS.
+      jedi_ssl_cert:
+        type: str
+        description: Path of the JKS Jedi serves TLS with; defaults to the instance's keystore.
+      jedi_ssl_cert_password:
+        type: str
+        description: Password of that keystore; defaults to cert_pass.

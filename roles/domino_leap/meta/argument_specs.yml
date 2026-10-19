@@ -1,0 +1,42 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL Leap
+    description:
+      - Downloads and installs HCL Leap, creates its internet site and registers it with the OIDC provider.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_oidc_debug:
+        type: bool
+        default: false
+        description: Enable the OIDC debug notes.ini settings.
+      leap_version:
+        type: str
+        default: 1.1.10
+        description: Release of Leap to install; the archive name is derived from it through leap_build_map.
+      leap_build_map:
+        type: dict
+        description: Build number of each Leap release, used to form the archive name.
+      leap_debug:
+        type: bool
+        default: false
+        description: Print Leap installation output.
+      domino_leap_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Leap.
+      domino_leap_proxy_url:
+        type: str
+        description: Proxied Leap hostname; derived from the first port forward's label and the machine name.
+      domino_oidc_provider_leap_home_url:
+        type: str
+        default: /volt-apps/secure/org/ide/manager.html
+        description: Home URL of the Leap internet site.
+      domino_leap_inet_site_create:
+        type: bool
+        default: true
+        description: Create the Leap internet site document; set false by the role when one exists.

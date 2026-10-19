@@ -1,0 +1,54 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL VoltMX Foundry in Docker
+    description:
+      - Downloads HCL VoltMX Foundry and runs it in Docker with its administrator account.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      voltmx_installation_type:
+        type: str
+        default: Development
+        description: Foundry installation type.
+      voltmx_installation_dir:
+        type: str
+        default: /local/voltmx-foundry
+        description: Foundry installation directory.
+      voltmx_intaller_version:
+        type: str
+        default: 9.5.1
+        description: Release of Foundry to install.
+      voltmx_installer_variant:
+        type: str
+        default: HF1
+        description: BoxVault patch of the Foundry archive.
+      voltmx_installer_archive:
+        type: str
+        default: VoltMXFoundrySetup-9.5.1.1_GA.tar.gz
+        description: File name of the Foundry installer archive.
+      installer_file:
+        type: dict
+        description: BoxVault coordinates of the archive, app, version, variant and name.
+      voltmx_admin_first_name:
+        type: str
+        default: VoltMX
+        description: Foundry administrator first name.
+      voltmx_admin_last_name:
+        type: str
+        default: Admin
+        description: Foundry administrator last name.
+      voltmx_admin_email:
+        type: str
+        description: Foundry administrator email; defaults to the deployment email.
+      voltmx_admin_pass:
+        type: str
+        default: SomeRandomPasswordSecureMe@!
+        description: Foundry administrator password.
+      voltmx_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Foundry.

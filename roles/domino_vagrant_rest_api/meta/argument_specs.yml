@@ -1,0 +1,55 @@
+---
+argument_specs:
+  main:
+    short_description: Install the Vagrant REST API
+    description:
+      - Installs the Vagrant REST Interface that Super.Human.Installer and the platform use to manage the guest.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      rest_app_home_dir:
+        type: str
+        default: /opt/rest-interface
+        description: Installation directory of the REST interface.
+      rest_config_file:
+        type: str
+        default: /config/application.yml
+        description: Configuration file path under the installation directory.
+      rest_vagrant_crud_version:
+        type: str
+        default: 1.10.0
+        description: Release of the Vagrant REST Interface to install.
+      rest_vagrant_crud_archive:
+        type: str
+        default: VagrantCRUD_centos7.zip
+        description: File name of the Vagrant CRUD archive.
+      rest_interface_jar:
+        type: str
+        default: rest-interface-1.10.0.jar
+        description: File name of the REST interface jar.
+      rest_interface_java_version:
+        type: str
+        default: 17.0.16-zulu
+        description: SDKMAN Java the REST interface runs on.
+      rest_vagrant_crud_git_repo:
+        type: str
+        default: https://github.com/Moonshine-IDE/Vagrant-REST-Interface/releases/download/
+        description: Release download base URL.
+      domino_vagrant_rest_api_port_forwards:
+        type: list
+        elements: dict
+        description: Guest port and proxy URL label HAProxy publishes for the REST interface.
+      domino_vagrant_rest_api_proxy_url:
+        type: str
+        description: Proxied REST interface hostname; derived from the port forward's label and the machine name.
+      domino_vagrant_restapi_supporting_dirs:
+        type: list
+        elements: str
+        description: Directories created for Moonshine IDE's upload and user files.
+      use_custom_rest_interface_jar:
+        type: bool
+        default: false
+        description: Use the jar placed at installers/custom_restapi_jar instead of the release.

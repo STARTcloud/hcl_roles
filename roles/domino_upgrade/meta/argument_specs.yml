@@ -1,0 +1,168 @@
+---
+argument_specs:
+  main:
+    short_description: Upgrade an HCL Domino server
+    description:
+      - Downloads the Domino installer, fixpack and hotfix archives and upgrades an installed Domino server in place.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_user:
+        type: str
+        default: domino
+        description: System user Domino runs as.
+      domino_group:
+        type: str
+        default: domino
+        description: System group Domino runs as.
+      domino_home_dir:
+        type: str
+        default: /local/notesdata
+        description: Domino data directory.
+      domino_user_soft_limit:
+        type: str
+        default: "60000"
+        description: Soft open-files limit of the Domino user.
+      domino_user_hard_limit:
+        type: str
+        default: "80000"
+        description: Hard open-files limit of the Domino user.
+      kyr_cert:
+        type: str
+        default: keyfile.kyr
+        description: Key ring file name.
+      id_vault_name:
+        type: str
+        default: ServerIDVault
+        description: ID vault name.
+      id_vault_password:
+        type: str
+        default: IDVaultPassword
+        description: Password of the ID vault ID.
+      id_vault_help_text:
+        type: str
+        default: Please create an issue in the DominoVagrant Issues Page for help!
+        description: Help text shown on password reset.
+      domino_admin_user_first_name:
+        type: str
+        default: Domino
+        description: Administrator first name.
+      domino_admin_user_last_name:
+        type: str
+        default: Admin
+        description: Administrator last name.
+      domino_admin_user_id:
+        type: str
+        default: admin-user.id
+        description: File name of the administrator ID.
+      domino_admin_notes_id_password:
+        type: str
+        default: password
+        description: Administrator Notes ID password.
+      domino_dev_user_first_name:
+        type: str
+        default: Dev
+        description: Development user first name.
+      domino_dev_user_last_name:
+        type: str
+        default: User
+        description: Development user last name.
+      domino_dev_user_short_name:
+        type: str
+        default: DevUser
+        description: Development user short name.
+      domino_dev_user_id:
+        type: str
+        default: dev-user.id
+        description: File name of the development user ID.
+      domino_dev_user_id_password:
+        type: str
+        default: password
+        description: Development user ID password.
+      domino_major_version:
+        type: str
+        default: "12"
+        description: Major version of the Domino installer.
+      domino_minor_version:
+        type: str
+        default: "0"
+        description: Minor version of the Domino installer.
+      domino_patch_version:
+        type: str
+        default: "2"
+        description: Patch version of the Domino installer.
+      domino_server_installer_tar:
+        type: str
+        default: Domino_12.0.2_Linux_English.tar
+        description: File name of the Domino installer archive.
+      domino_notesini_servertasks:
+        type: str
+        default: HTTP,nomad
+        description: ServerTasks line written to notes.ini.
+      domino_installer_fixpack_install:
+        type: bool
+        default: false
+        description: Apply a fixpack after the upgrade.
+      domino_fixpack_version:
+        type: str
+        default: FP1
+        description: Fixpack designation.
+      domino_server_fixpack_tar:
+        type: str
+        default: Domino_1202FP1_Linux.tar
+        description: File name of the fixpack archive.
+      domino_installer_hotfix_install:
+        type: bool
+        default: false
+        description: Apply a hotfix after the upgrade and any fixpack.
+      domino_hotfix_version:
+        type: str
+        default: HF50
+        description: Hotfix designation.
+      domino_server_hotfix_tar:
+        type: str
+        default: 1201HF50-linux64.tar
+        description: File name of the hotfix archive.
+      installer_url_app_path:
+        type: str
+        default: SHI/Domino
+        description: Path of the Domino archives on the installer server.
+      domino_install_dir:
+        type: str
+        default: /opt/hcl/domino/notes/latest/linux
+        description: Domino program directory.
+      domino_install_basedir:
+        type: str
+        default: /opt/hcl/domino
+        description: Domino program base directory.
+      domino_https_enabled:
+        type: int
+        default: 1
+        description: Whether the HTTP task listens with TLS.
+      ots_generate_server_id_count:
+        type: int
+        default: 0
+        description: Number of additional server IDs One Touch Setup pre-generates.
+      domino_organization:
+        type: str
+        default: STARTcloud
+        description: Domino organization (O=) of the server.
+      domino_countrycode:
+        type: str
+        description: Optional country code (C=) appended to the organization.
+      domino_country_suffix:
+        type: str
+        description: The /C= suffix built from domino_countrycode, empty when none.
+      domino_country_suffix_abbr:
+        type: str
+        description: The /<code> suffix built from domino_countrycode, empty when none.
+      domino_install_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL labels HAProxy publishes for Domino.
+      domino_install_proxy_url:
+        type: str
+        description: Proxied Domino web hostname; derived from the first port forward's label and the machine name.

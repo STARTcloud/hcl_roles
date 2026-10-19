@@ -1,0 +1,23 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy Genesis applications
+    description:
+      - Deploys the listed packages through Genesis.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      genesis_packages_debug:
+        type: bool
+        default: false
+        description: Print Genesis output during the run.
+      genesis_packages:
+        type: list
+        elements: str
+        default:
+          - netmonitor
+          - SuperHumanPortal
+        description: Genesis package names to deploy.

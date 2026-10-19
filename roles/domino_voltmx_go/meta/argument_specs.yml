@@ -1,0 +1,37 @@
+---
+argument_specs:
+  main:
+    short_description: Install the VoltMX Go plugin
+    description:
+      - Downloads the HCL VoltMX Go plugin installer tool and installs the plugin into VoltMX Foundry.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      voltmx_go_version:
+        type: str
+        default: 2.1.1
+        description: Release of VoltMX Go to install; the archive name is derived from it.
+      voltmx_go_installer_archive:
+        type: str
+        description: File name of the VoltMX Go installer tool archive; derived from the version when not set.
+      installer_file:
+        type: dict
+        description: BoxVault coordinates of the archive, app, version, variant and name.
+      voltmx_go_plugin_installer_bin:
+        type: str
+        default: VoltMXGoInstallationTool-9.5.18.3.bin
+        description: File name of the extracted plugin installer binary.
+      voltmx_go_install_dir:
+        type: str
+        description: Directory the plugin installer extracts into; under voltmx_installation_dir.
+      voltmx_go_installer_bin:
+        type: str
+        default: VoltMXGoPluginInstaller
+        description: File name of the plugin installer.
+      install_voltmx_go_plugin:
+        type: bool
+        default: true
+        description: Run the plugin install after the extraction.

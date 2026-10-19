@@ -1,0 +1,12 @@
+---
+argument_specs:
+  main:
+    short_description: Reset a Domino installation
+    description:
+      - Returns an existing Domino installation to a pre-setup state so One Touch Setup runs again.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.

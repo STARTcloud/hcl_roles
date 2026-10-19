@@ -1,0 +1,114 @@
+---
+argument_specs:
+  main:
+    short_description: Configure the Domino OIDC provider
+    description:
+      - Configures Domino as an OIDC identity provider with its auth internet site, registered client and the trusted
+        provider entries the web, Nomad, Verse and Leap roles join.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_oidc_debug:
+        type: bool
+        default: false
+        description: Enable the OIDC debug notes.ini settings.
+      enabled_roles:
+        type: list
+        elements: str
+        description: Names of every role this deployment runs; derived from provision_roles.
+      domino_oidc_provider_enabled:
+        type: bool
+        description: Whether the provider is configured; true while this role runs.
+      domino_oidc_provider_federation_enabled:
+        type: bool
+        default: true
+        description: Issue ID vault bearer tokens through the provider.
+      domino_oidc_provider_web_enabled:
+        type: bool
+        default: true
+        description: Log the Domino web sites in through the provider.
+      domino_oidc_provider_nomad_enabled:
+        type: bool
+        description: Register Nomad Web with the provider; on when the domino_nomadweb role runs.
+      domino_oidc_provider_verse_enabled:
+        type: bool
+        description: Register Verse with the provider; on when the domino_verse role runs.
+      domino_oidc_provider_leap_enabled:
+        type: bool
+        description: Register Leap with the provider; on when the domino_leap role runs.
+      domino_oidc_web_apps_use_unified_registered_client:
+        type: bool
+        default: true
+        description: Register the web applications under one registered client.
+      domino_oidc_hostname:
+        type: str
+        default: auth
+        description: Subdomain label of the provider's internet site.
+      domino_oidc_install_proxy_url:
+        type: str
+        description: Provider hostname; derived from domino_oidc_hostname and the machine name.
+      domino_oidc_client_id:
+        type: str
+        description: Registered client id; derived from the hostname and domain when not set.
+      domino_oidc_client_secret:
+        type: str
+        description: Registered client secret; generated when not set.
+      domino_provider_create:
+        type: bool
+        default: true
+        description: Create the OIDC provider document.
+      domino_oidc_auth_inet_site_create:
+        type: bool
+        default: true
+        description: Create the provider's internet site document.
+      domino_oidc_provider_login_form:
+        type: str
+        default: $$LoginUserForm
+        description: Login form of the provider's internet site.
+      domino_oidc_provider_login_form_db:
+        type: str
+        default: domcfg.nsf
+        description: Database holding the login form.
+      domino_oidc_provider_web_home_url:
+        type: str
+        default: /names.nsf?open
+        description: Home URL of the Domino web applications internet site.
+      domino_oidc_trusted_roots:
+        type: str
+        default: ""
+        description: Trusted roots of the provider document.
+      domino_oidc_auth_type:
+        type: str
+        default: B
+        description: Client authentication type, N none, B client secret basic, P client secret post, J private key JWT.
+      domino_oidc_simplify_redirect_url:
+        type: str
+        default: "1"
+        description: Simplify the redirect URL on the provider document.
+      domino_oidc_bearer_options:
+        type: str
+        default: "0"
+        description: Bearer options of the provider document.
+      domino_oidc_bearer_custom_claim_names:
+        type: str
+        default: ""
+        description: Custom bearer claim names.
+      domino_oidc_bearer_alternate_audiences:
+        type: str
+        default: ""
+        description: Alternate bearer audiences.
+      domino_oidc_bearer_allowed_client_ids:
+        type: str
+        default: ""
+        description: Client ids allowed to present bearer tokens.
+      domino_oidc_log_level:
+        type: str
+        default: "3"
+        description: Provider log level, 1 minimal, 2 standard, 3 verbose.
+      domino_oidc_external_providers:
+        type: list
+        elements: dict
+        description: External OIDC providers to trust, each with name, base_url, client_id and client_secret.

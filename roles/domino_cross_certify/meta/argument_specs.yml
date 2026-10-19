@@ -1,0 +1,25 @@
+---
+argument_specs:
+  main:
+    short_description: Cross-certify safe IDs
+    description:
+      - Cross-certifies the user and organization safe IDs against the server certifier.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      show_help:
+        type: bool
+        default: true
+        description: Whether to display help output during the run.
+      user_safe_id:
+        type: str
+        default: SAFE.IDS
+        description: File name of the user safe ID under id-files/user-safe-ids.
+      org_safe_ids:
+        type: list
+        elements: str
+        default: []
+        description: File names of organization safe IDs under id-files/user-safe-ids.

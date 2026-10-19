@@ -1,0 +1,46 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL Verse
+    description:
+      - Downloads and installs HCL Verse, creates its internet site, the application switcher and the OIDC logout redirect.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      verse_base_version:
+        type: str
+        default: 3.2.6
+        description: Release of Verse to install; the archive name is derived from it.
+      verse_debug:
+        type: bool
+        default: true
+        description: Print Verse installation output.
+      domino_oidc_provider_verse_home_url:
+        type: str
+        default: /verse
+        description: Home URL of the Verse internet site.
+      domino_verse_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Verse.
+      domino_verse_proxy_url:
+        type: str
+        description: Proxied Verse hostname; derived from the first port forward's label and the machine name.
+      domino_verse_inet_site_create:
+        type: bool
+        default: true
+        description: Create the Verse internet site document; set false by the role when one exists.
+      verse_organization_icon:
+        type: str
+        description: Data URI of the organization icon shown in the application switcher.
+      enabled_roles:
+        type: list
+        elements: str
+        description: Names of every role this deployment runs; derived from provision_roles.
+      verse_app_switcher_enabled_services:
+        type: list
+        elements: str
+        description: Services listed in the Verse application switcher.

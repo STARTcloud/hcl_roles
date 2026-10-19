@@ -1,0 +1,47 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL Sametime
+    description:
+      - Downloads and installs HCL Sametime Premium and its fixpack on the Domino server.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      sametime_archive:
+        type: str
+        default: Sametime_Premium_12.0.4.zip
+        description: File name of the Sametime archive.
+      sametime_archive_fixpack:
+        type: str
+        default: Sametime_Premium_12.0.4_FP1.zip
+        description: File name of the Sametime fixpack archive.
+      sametime_domino_major_version:
+        type: str
+        default: "12"
+        description: Domino major version the Sametime build targets.
+      sametime_domino_minor_version:
+        type: str
+        default: "01"
+        description: Domino minor version the Sametime build targets.
+      sametime_version:
+        type: str
+        default: 12.0.4
+        description: Release of Sametime to install.
+      sametime_fixpack_version:
+        type: str
+        default: FP1
+        description: Fixpack designation.
+      sametime_debug:
+        type: bool
+        default: true
+        description: Print Sametime installation output.
+      domino_sametime_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Sametime.
+      domino_sametime_proxy_url:
+        type: str
+        description: Proxied Sametime hostname; derived from the first port forward's label and the machine name.

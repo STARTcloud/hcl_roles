@@ -1,0 +1,558 @@
+---
+argument_specs:
+  main:
+    short_description: Install the HCL Domino server
+    description:
+      - Downloads the Domino installer, fixpack and hotfix archives, installs the server and its chosen features under the
+        Domino user, and prepares the ID vault, administrator, certifier, development user and server document settings
+        One Touch Setup consumes.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_server_name:
+        type: str
+        description: Common name of the Domino server; defaults to the machine hostname.
+      domino_server_domain:
+        type: str
+        description: DNS domain of the Domino server; defaults to the machine domain.
+      domino_user:
+        type: str
+        default: domino
+        description: System user Domino runs as.
+      domino_group:
+        type: str
+        default: domino
+        description: System group Domino runs as.
+      domino_home_dir:
+        type: str
+        default: /local/notesdata
+        description: Domino data directory.
+      domino_user_soft_limit:
+        type: str
+        default: "60000"
+        description: Soft open-files limit of the Domino user.
+      domino_user_hard_limit:
+        type: str
+        default: "80000"
+        description: Hard open-files limit of the Domino user.
+      kyr_cert:
+        type: str
+        default: keyfile.kyr
+        description: Key ring file name imported from the certificate store.
+      id_vault_setup:
+        type: bool
+        default: true
+        description: Create the ID vault during One Touch Setup.
+      id_vault_replicate:
+        type: bool
+        default: false
+        description: Replicate the ID vault from the origin server on an additional server.
+      id_vault_name:
+        type: str
+        description: ID vault name; defaults to the organization name followed by Vault.
+      id_vault_name_allow_notes_based_apps:
+        type: str
+        default: "1"
+        description: Allow Notes based applications to use the vault.
+      id_vault_password:
+        type: str
+        default: IDVaultPassword
+        description: Password of the ID vault ID.
+      id_vault_help_text:
+        type: str
+        default: Please contact your system administrator for help!
+        description: Help text shown on password reset.
+      id_vault_enable_vault_bearer:
+        type: str
+        default: "1"
+        description: Enable bearer token access to the vault.
+      domino_admin_user_first_name:
+        type: str
+        description: Administrator first name; defaults to the organization name.
+      domino_admin_user_last_name:
+        type: str
+        default: Admin
+        description: Administrator last name.
+      domino_admin_user_id:
+        type: str
+        default: admin-user.id
+        description: File name of the administrator ID.
+      domino_admin_notes_id_password:
+        type: str
+        description: Administrator Notes ID password; generated when not set.
+      domino_certifier_id:
+        type: str
+        default: cert.id
+        description: File name of the certifier ID.
+      domino_certifier_id_password:
+        type: str
+        description: Certifier ID password; defaults to the administrator password.
+      auto_register_users_enable_full_text_index:
+        type: bool
+        default: true
+        description: Full-text index the mail files of registered users.
+      auto_register_users_cert_expiry_months:
+        type: int
+        default: 48
+        description: Certificate lifetime in months for registered users.
+      auto_register_users_save_id_to_person_doc:
+        type: bool
+        default: false
+        description: Store registered user IDs in their Person documents.
+      auto_register_users_password:
+        type: str
+        default: password
+        description: Password given to users registered during setup.
+      domino_dev_user_first_name:
+        type: str
+        default: Dev
+        description: Development user first name.
+      domino_dev_user_last_name:
+        type: str
+        default: User
+        description: Development user last name.
+      domino_dev_user_short_name:
+        type: str
+        default: DevUser
+        description: Development user short name and mail file name.
+      domino_dev_user_id:
+        type: str
+        default: dev-user.id
+        description: File name of the development user ID.
+      domino_dev_user_id_password:
+        type: str
+        default: password
+        description: Development user ID password.
+      user_safe_id:
+        type: str
+        default: SAFE.ids
+        description: File name of the safe ID under id-files/user-safe-ids used for cross-certification.
+      is_additional_server:
+        type: bool
+        default: false
+        description: Whether this server joins an existing domain instead of creating one.
+      domino_major_version:
+        type: str
+        default: "14"
+        description: Major version of the Domino installer.
+      domino_minor_version:
+        type: str
+        default: "5"
+        description: Minor version of the Domino installer.
+      domino_patch_version:
+        type: str
+        default: "1"
+        description: Patch version of the Domino installer.
+      domino_version_string:
+        type: str
+        description: Dotted Domino version; derived from the three version parts.
+      domino_ea_version:
+        type: str
+        default: EA2
+        description: Early Access designation used in the installer file name.
+      domino_installer_ea_install:
+        type: bool
+        default: false
+        description: Install an Early Access build named by domino_ea_version.
+      domino_server_installer_tar:
+        type: str
+        description: File name of the Domino installer archive; derived from the version when not set.
+      domino_notesini_servertasks:
+        type: str
+        default: replica,router,update,amgr,adminp,certmgr,http,nomad
+        description: ServerTasks line written to notes.ini.
+      domino_installer_fixpack_install:
+        type: bool
+        default: false
+        description: Apply a fixpack after the base install.
+      domino_fixpack_version:
+        type: str
+        default: FP1
+        description: Fixpack designation, for example FP1.
+      domino_server_fixpack_tar:
+        type: str
+        description: File name of the fixpack archive; derived from the version when not set.
+      domino_installer_hotfix_install:
+        type: bool
+        default: false
+        description: Apply a hotfix after the base install and any fixpack.
+      domino_hotfix_version:
+        type: str
+        default: HF42
+        description: Hotfix designation, for example HF42.
+      domino_server_hotfix_tar:
+        type: str
+        description: File name of the hotfix archive; derived from the version when not set.
+      domino_install_dir:
+        type: str
+        default: /opt/hcl/domino/notes/latest/linux
+        description: Domino program directory.
+      domino_install_basedir:
+        type: str
+        default: /opt/hcl/domino
+        description: Domino program base directory.
+      domino_install_chosen_feature_list:
+        type: str
+        default: Domino,Nomad,OnTime,Verse,Help
+        description: Comma-separated installer feature list.
+      domino_https_enabled:
+        type: bool
+        default: true
+        description: Whether the HTTP task listens with TLS.
+      domino_https_mode:
+        type: int
+        description: HTTP_SSLMode of the server document; 1 when TLS is enabled, 0 otherwise.
+      ots_generate_server_id_count:
+        type: int
+        default: 0
+        description: Number of additional server IDs One Touch Setup pre-generates below Domino 14.
+      domino_organization:
+        type: str
+        required: true
+        default: STARTcloud
+        description: Domino organization (O=) the server certifies under.
+      domino_countrycode:
+        type: str
+        description: Optional country code (C=) appended to the organization.
+      domino_country_suffix:
+        type: str
+        description: The /C= suffix built from domino_countrycode, empty when none.
+      domino_country_suffix_abbr:
+        type: str
+        description: The /<code> suffix built from domino_countrycode, empty when none.
+      domino_shutdown_delay:
+        type: int
+        default: 30
+        description: Seconds to wait after a Domino stop.
+      domino_startup_delay:
+        type: int
+        default: 60
+        description: Seconds to wait after a Domino start.
+      domino_enable_java_agent_cache:
+        type: int
+        default: 2
+        description: EnableJavaAgentCache notes.ini value.
+      domino_daos_enable:
+        type: int
+        default: 1
+        description: Enable DAOS on the server document.
+      domino_daos_min_obj_size:
+        type: int
+        default: 256000
+        description: Minimum attachment size DAOS stores externally.
+      domino_daos_encrypt_nlo:
+        type: int
+        default: 0
+        description: Encrypt DAOS objects on the server document.
+      domino_daos_base_path:
+        type: str
+        default: /local/daos
+        description: DAOS storage directory.
+      domino_nifnsf_enable:
+        type: str
+        default: "1"
+        description: Enable NIFNSF.
+      domino_nifnsf_base_path:
+        type: str
+        default: /local/nif
+        description: NIFNSF storage directory.
+      domino_ft_fly_index_off:
+        type: str
+        default: "1"
+        description: FT_FLY_INDEX_OFF notes.ini value.
+      domino_update_fulltext_thread:
+        type: str
+        default: "1"
+        description: UPDATE_FULLTEXT_THREAD notes.ini value.
+      domino_update_fulltext_thread_path:
+        type: str
+        default: /local/fulltext_indices
+        description: Full-text index directory.
+      domino_translogs_path:
+        type: str
+        default: /local/translogs
+        description: Transaction log directory.
+      domino_translog_auto_fixup:
+        type: str
+        default: ""
+        description: TRANSLOG_AutoFixup server document value.
+      domino_translog_max_size:
+        type: int
+        default: 1024
+        description: Transaction log maximum size in MB.
+      domino_translog_performance:
+        type: str
+        default: "2"
+        description: TRANSLOG_Performance server document value.
+      domino_translog_status:
+        type: str
+        default: "1"
+        description: TRANSLOG_Status server document value.
+      domino_translog_style:
+        type: str
+        default: "0"
+        description: TRANSLOG_Style server document value.
+      domino_translog_use_all:
+        type: str
+        default: "0"
+        description: TRANSLOG_UseAll server document value.
+      domino_qta_mthd:
+        type: str
+        default: "1"
+        description: QtaMthd server document value.
+      domino_http_log_enabled:
+        type: str
+        default: "1"
+        description: HTTP_LogToFiles server document value.
+      domino_http_log_directory:
+        type: str
+        default: domino/html-logs
+        description: HTTP access log directory.
+      domino_http_log_prefix:
+        type: str
+        default: access
+        description: HTTP access log file prefix.
+      domino_http_log_format:
+        type: str
+        default: "1"
+        description: HTTP_AccessLogFormat server document value.
+      domino_http_log_to_dom_log:
+        type: str
+        default: "1"
+        description: HTTP_LogToDomLog server document value.
+      domino_http_home_url:
+        type: str
+        default: homepage.nsf
+        description: HTTP home URL of the server document.
+      domino_http_enable_session_auth:
+        type: str
+        default: "1"
+        description: HTTP_EnableSessionAuth server document value.
+      domino_http_tcpnp:
+        type: str
+        default: "1"
+        description: HTTP_TCPNP server document value.
+      domino_http_allow_anonymous:
+        type: str
+        default: "0"
+        description: HTTP_AllowAnonymous server document value.
+      domino_http_normal_mode:
+        type: str
+        default: "1"
+        description: HTTP_NormalMode server document value.
+      domino_http_max_active_threads:
+        type: int
+        default: 40
+        description: Maximum active HTTP threads.
+      domino_http_ssl_anonymous:
+        type: str
+        default: "0"
+        description: HTTP_SSLAnonymous server document value.
+      domino_http_enforce_access:
+        type: str
+        default: "1"
+        description: HTTP_EnforceAccess server document value.
+      domino_ldap_enforce_access:
+        type: str
+        default: "1"
+        description: LDAP_EnforceAccess server document value.
+      domino_imap_enforce_access:
+        type: str
+        default: "1"
+        description: IMAP_EnforceAccess server document value.
+      domino_pop3_enforce_access:
+        type: str
+        default: "1"
+        description: POP3_EnforceAccess server document value.
+      domino_smtp_listener_enabled:
+        type: str
+        default: "1"
+        description: SMTPListenerEnabled server document value.
+      domino_router_port_status:
+        type: str
+        default: "2"
+        description: Router_PortStatus server document value.
+      domino_ldap_ssl_status:
+        type: str
+        default: "1"
+        description: LDAP_SSLStatus server document value.
+      domino_imap_ssl_status:
+        type: str
+        default: "1"
+        description: IMAP_SSLStatus server document value.
+      domino_pop3_ssl_status:
+        type: str
+        default: "1"
+        description: POP3_SSLStatus server document value.
+      domino_nsd_enbld:
+        type: str
+        default: "1"
+        description: NSDEnbld server document value.
+      domino_fr_enbld:
+        type: str
+        default: "1"
+        description: FREnbld server document value.
+      domino_flt_rcvry_not:
+        type: str
+        default: LocalDomainAdmins
+        description: Fault recovery notification group.
+      domino_ld_isite:
+        type: str
+        default: "1"
+        description: LdISite server document value.
+      domino_notesini_daos_encrypt_nlo:
+        type: int
+        default: 0
+        description: DAOS_ENCRYPT_NLO notes.ini value.
+      domino_noteini_daos_max_files_per_subcontainer:
+        type: int
+        default: 10000
+        description: DAOS_MAX_FILES_PER_SUBCONTAINER notes.ini value.
+      domino_create_r12_databases:
+        type: str
+        default: "1"
+        description: Create_R12_databases notes.ini value.
+      domino_create_r85_log:
+        type: str
+        default: "1"
+        description: Create_R85_log notes.ini value.
+      domino_admin_ignore_new_servernaming_convention:
+        type: str
+        default: "1"
+        description: ADMIN_IGNORE_NEW_SERVERNAMING_CONVENTION notes.ini value.
+      domino_log_replication:
+        type: str
+        default: "1"
+        description: LOG_REPLICATION notes.ini value.
+      domino_log_sessions:
+        type: str
+        default: "1"
+        description: LOG_SESSIONS notes.ini value.
+      domino_compress_lz1_create:
+        type: str
+        default: "1"
+        description: COMPRESS_LZ1_CREATE notes.ini value.
+      domino_create_nifnsf_databases:
+        type: str
+        default: "1"
+        description: CREATE_NIFNSF_DATABASES notes.ini value.
+      domino_inotes_wa_enable_actions_in_archive:
+        type: str
+        default: "1"
+        description: iNotes_WA_EnableActionsInArchive notes.ini value.
+      domino_http_public_urls:
+        type: str
+        default: "/iwaredir.nsf/*:/.well-known*:/mfa.nsf/*"
+        description: HTTPPublicURLs notes.ini value.
+      domino_enable_sni:
+        type: str
+        default: "1"
+        description: ENABLE_SNI notes.ini value.
+      domino_admin_client_skip_domino:
+        type: str
+        default: "1"
+        description: ADMIN_CLIENT_SKIP_DOMINO notes.ini value.
+      domino_event_pool_size:
+        type: str
+        default: "41943040"
+        description: EVENT_POOL_SIZE notes.ini value.
+      domino_server_restart_delay:
+        type: str
+        default: "1"
+        description: SERVER_RESTART_DELAY notes.ini value.
+      domino_nsf_buffer_pool_size_mb:
+        type: str
+        default: "256"
+        description: NSF buffer pool size in MB.
+      domino_ftg_use_sys_memory:
+        type: str
+        default: "1"
+        description: FTG_USE_SYS_MEMORY notes.ini value.
+      domino_server_min_possible_trans_time:
+        type: str
+        default: "1500"
+        description: Server_MinPossibleTransTime notes.ini value.
+      domino_server_max_possible_trans_time:
+        type: str
+        default: "20000000"
+        description: Server_MaxPossibleTransTime notes.ini value.
+      domino_certmgr_accept_tou:
+        type: str
+        default: "1"
+        description: CertMgr_ACCEPT_TOU notes.ini value.
+      domino_certstore_cachelog:
+        type: str
+        default: "0"
+        description: CERTSTORE_CACHELOG notes.ini value.
+      domino_nts_auto_config:
+        type: str
+        default: "true"
+        description: NTS_AUTO_CONFIG notes.ini value.
+      domino_http_enable_methods:
+        type: str
+        default: GET,POST,PUT,DELETE,HEAD,OPTIONS
+        description: HTTPEnableMethods notes.ini value.
+      domino_http_jvm_max_heap_size:
+        type: str
+        default: 2048M
+        description: HTTP JVM maximum heap size.
+      domino_http_jvm_max_heap_size_set:
+        type: str
+        default: "1"
+        description: HTTPJVMMaxHeapSizeSet notes.ini value.
+      domino_quota_method:
+        type: str
+        default: "1"
+        description: QtaMthd notes.ini value.
+      domino_ssl_cipher_list:
+        type: list
+        elements: str
+        description: SSLCipherList of the server document.
+      domino_ssl_cipher_supported_list:
+        type: list
+        elements: str
+        description: SSLCipherSupportedList of the server document.
+      domino_install_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL labels HAProxy publishes for Domino; the first entry is HTTPS, the second HTTP, the third NRPC.
+      domino_install_proxy_url:
+        type: str
+        description: Proxied Domino web hostname; derived from the first port forward's label and the machine name.
+      domino_server_name_common:
+        type: str
+        description: Server common name under the naming convention of the installed Domino version.
+      domino_server_name_common_with_org:
+        type: str
+        description: Server common name with its organization suffix.
+      super_human_portal_enabled:
+        type: bool
+        default: true
+        description: Point the web site documents at Super.Human.Portal.
+      domino_oidc_provider_enabled:
+        type: bool
+        default: false
+        description: Whether the OIDC provider is configured; the domino_oidc role sets it when it runs.
+      domino_oidc_provider_web_enabled:
+        type: bool
+        default: false
+        description: Whether the Domino web sites log in through the OIDC provider.
+      domino_oidc_provider_nomad_enabled:
+        type: bool
+        default: false
+        description: Whether Nomad Web is registered with the OIDC provider.
+      domino_oidc_provider_verse_enabled:
+        type: bool
+        default: false
+        description: Whether Verse is registered with the OIDC provider.
+      domino_oidc_provider_leap_enabled:
+        type: bool
+        default: false
+        description: Whether Leap is registered with the OIDC provider.
+      domino_oidc_web_apps_use_unified_registered_client:
+        type: bool
+        default: true
+        description: Register the web applications under one OIDC registered client.

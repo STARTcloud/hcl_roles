@@ -1,0 +1,27 @@
+---
+argument_specs:
+  main:
+    short_description: Install the Nash Domino start script
+    description:
+      - Installs the nashcom domino-startscript and registers Domino as a systemd service.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      nash_domino_service_script_version:
+        type: str
+        default: 3.7.0
+        description: Release of domino-startscript to install.
+      nash_domino_service_script_git_repo:
+        type: str
+        default: https://github.com/nashcom/domino-startscript/releases/download
+        description: Release download base URL.
+      nash_domino_service_script_archive:
+        type: str
+        description: File name of the start script archive; derived from the version when not set.
+      domino_start_script_source_folder:
+        type: str
+        default: domino-startscript
+        description: Folder the archive extracts to.

@@ -1,0 +1,48 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL Traveler
+    description:
+      - Downloads and installs HCL Traveler and its optional fixpack and creates the Traveler internet site.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      traveler_debug:
+        type: bool
+        default: true
+        description: Print Traveler installation output.
+      traveler_version:
+        type: str
+        default: 14.5.1
+        description: Release of Traveler to install; the archive name is derived from it.
+      traveler_fixpack_version:
+        type: str
+        default: FP1
+        description: Fixpack designation, for example FP1.
+      traveler_fixpack_install:
+        type: bool
+        default: false
+        description: Apply a Traveler fixpack after the install.
+      traveler_archive_extension:
+        type: str
+        description: Archive extension; .tar from 14.5.1, .tar.gz before.
+      traveler_archive:
+        type: str
+        description: File name of the Traveler archive; derived from the version when not set.
+      traveler_fixpack_archive:
+        type: str
+        description: File name of the fixpack archive; derived from the version when not set.
+      domino_traveler_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Traveler.
+      domino_traveler_proxy_url:
+        type: str
+        description: Proxied Traveler hostname; derived from the first port forward's label and the machine name.
+      domino_traveler_inet_site_create:
+        type: bool
+        default: true
+        description: Create the Traveler internet site document; set false by the role when one exists.

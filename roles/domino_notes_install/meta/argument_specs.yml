@@ -1,0 +1,229 @@
+---
+argument_specs:
+  main:
+    short_description: Install the HCL Notes client on Windows
+    description:
+      - Installs the HCL Notes client, its fixpack and hotfix, the optional RAM disk data directory, multi-user and Citrix
+        settings, and the panagenda MarvelClient.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      notes_major_version:
+        type: str
+        default: "14"
+        description: Major version of the Notes installer.
+      notes_minor_version:
+        type: str
+        default: "5"
+        description: Minor version of the Notes installer.
+      notes_patch_version:
+        type: str
+        default: "0"
+        description: Patch version of the Notes installer.
+      notes_fixpack_version:
+        type: str
+        default: FP1
+        description: Fixpack designation.
+      notes_hotfix_version:
+        type: str
+        default: SHF20
+        description: Hotfix designation.
+      notes_installation_type:
+        type: str
+        default: client_only
+        choices:
+          - client_only
+          - admin_designer
+        description: Install the Notes client alone or with Designer and Administrator.
+      notes_install_type:
+        type: str
+        description: notes.ini InstallType derived from notes_installation_type; 6 client only, 2 all clients.
+      client_only_notes_installer_exe:
+        type: str
+        default: Notes_14.5_Win64_English.exe
+        description: File name of the client-only installer.
+      admin_designer_notes_installer_exe:
+        type: str
+        default: Notes_Designer_Admin_14.5_Win64_English.exe
+        description: File name of the Designer and Administrator installer.
+      notes_installer_exe:
+        type: str
+        description: Installer file name chosen by notes_installation_type.
+      notes_fixpack_exe:
+        type: str
+        default: Notes_1450FP1_Win64.exe
+        description: File name of the fixpack installer.
+      notes_hotfix_exe:
+        type: str
+        default: 1400FP3SHF20_W64_standard.exe
+        description: File name of the hotfix installer.
+      notes_installer_fixpack_install:
+        type: bool
+        default: false
+        description: Apply the fixpack after the base install.
+      notes_installer_hotfix_install:
+        type: bool
+        default: false
+        description: Apply the hotfix after the base install and any fixpack.
+      notes_install_dir:
+        type: str
+        default: C:\Program Files\HCL\Notes
+        description: Notes program directory.
+      notes_temp_dir:
+        type: str
+        default: C:\temp\notes_install
+        description: Directory the installers are staged in.
+      notes_unpack_dir:
+        type: str
+        default: C:\temp\notes_unpack
+        description: Directory the installers unpack into.
+      notes_use_ramdisk:
+        type: bool
+        default: false
+        description: Keep the Notes data directory on a RAM disk.
+      notes_ramdisk_path:
+        type: str
+        default: R
+        description: Drive letter of the RAM disk.
+      notes_ramdisk_size_mb:
+        type: int
+        default: 700
+        description: RAM disk size in MB.
+      notes_ramdisk_size:
+        type: str
+        description: RAM disk size with its unit suffix; derived from notes_ramdisk_size_mb.
+      notes_ramdisk_label:
+        type: str
+        default: Marvel
+        description: Volume label of the RAM disk.
+      notes_ramdisk_filesystem:
+        type: str
+        default: NTFS
+        description: File system of the RAM disk.
+      notes_ramdisk_mount_flags:
+        type: str
+        default: "0x180c"
+        description: SPVVEngine MountFlags registry value for the startup RAM disk.
+      notes_ramdisk_filesystem_code:
+        type: int
+        default: 3
+        description: SPVVEngine FileSystem registry code; 3 is NTFS.
+      notes_ramdisk_initial_folders:
+        type: str
+        default: \HCL\Notes\Data
+        description: Folder tree the driver recreates on the RAM disk at every boot.
+      notes_multiuser_enabled:
+        type: bool
+        default: true
+        description: Install Notes in multi-user mode.
+      notes_multiuser_base_dir:
+        type: str
+        default: R
+        description: Drive letter of the multi-user base directory.
+      notes_multiuser_common_dir:
+        type: str
+        default: C:\ProgramData
+        description: Multi-user common directory.
+      notes_citrix_mode:
+        type: bool
+        default: true
+        description: Install with the Citrix and VDI settings.
+      notes_include_transform:
+        type: bool
+        default: false
+        description: Apply the MST transform file during the install.
+      notes_data_directory:
+        type: str
+        description: Notes data directory; derived from notes_multiuser_base_dir.
+      notes_disable_workspace_roaming:
+        type: str
+        default: "1"
+        description: Disable workspace roaming in notes.ini.
+      notes_disable_clientrecord:
+        type: str
+        default: "1"
+        description: Disable client record logging in notes.ini.
+      notes_enable_nsl_under_citrix:
+        type: str
+        default: "1"
+        description: Enable Notes Shared Login under Citrix in notes.ini.
+      notes_enable_using_appdata_for_roaming:
+        type: str
+        default: "1"
+        description: Keep the NSL password file under AppData for roaming.
+      notes_cleanup_temp_files:
+        type: bool
+        default: true
+        description: Remove the staging directories after the install.
+      notes_keep_installers:
+        type: bool
+        default: false
+        description: Keep the installer files after the install.
+      notes_exe_path:
+        type: str
+        description: Path of notes.exe used to verify the install.
+      notes_mst_file:
+        type: str
+        default: HCL Notes 14.5 x64.mst
+        description: File name of the MST transform.
+      marvel_client_version:
+        type: str
+        default: 14.5.7
+        description: panagenda MarvelClient version.
+      marvel_client_dll_artifact:
+        type: str
+        default: mc64-14.5.7.11267.dll
+        description: File name of the MarvelClient DLL artifact.
+      marvel_client_dll:
+        type: str
+        default: mc64.dll
+        description: File name the MarvelClient DLL is installed as.
+      notes_enable_marvel_client:
+        type: bool
+        default: false
+        description: Install and configure MarvelClient.
+      notes_marvel_client_network_directory:
+        type: str
+        default: P:\MarvelClient
+        description: MarvelClient network directory.
+      notes_marvel_client_db:
+        type: str
+        default: "%notes_homeserver%!!panagenda\\panagenda.nsf"
+        description: MarvelClient configuration database.
+      notes_marvel_client_db_notresolvable:
+        type: str
+        description: MarvelClient database used when the home server does not resolve.
+      notes_marvel_client_db_unavailable:
+        type: str
+        description: MarvelClient database used when the home server is unavailable.
+      notes_marvel_client_support_idvault:
+        type: str
+        default: "1"
+        description: MarvelClient ID vault support.
+      notes_marvel_client_allow_sync_during_setup:
+        type: str
+        default: "2"
+        description: MarvelClient sync during setup.
+      notes_marvel_client_allow_sync_during_setup_fixprompt:
+        type: str
+        default: "1"
+        description: MarvelClient fix prompt during setup sync.
+      notes_marvel_client_working_directory:
+        type: str
+        default: "%notes_data%\\mc"
+        description: MarvelClient working directory.
+      notes_marvel_client_zap_notes:
+        type: str
+        default: "1"
+        description: MarvelClient zap notes setting.
+      notes_marvel_client_msg_suppress_setup_complete:
+        type: str
+        default: "1"
+        description: Suppress the MarvelClient setup complete message.
+      notes_14_admin_hack_for_multiuser_single_client:
+        type: bool
+        default: true
+        description: Apply the Notes 14 multi-user single client administrator workaround.

@@ -1,0 +1,38 @@
+---
+argument_specs:
+  main:
+    short_description: Install the Domino REST API
+    description:
+      - Downloads and installs the HCL Domino REST API.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_rest_api_version:
+        type: str
+        default: 1.1.7
+        description: Release of the REST API to install; the archive name is derived from it and the Domino version.
+      domino_major_version:
+        type: str
+        default: "14"
+        description: Domino major version used in the archive name; taken from domino_install when set.
+      domino_minor_version:
+        type: str
+        default: "5"
+        description: Domino minor version used in the archive name; taken from domino_install when set.
+      domino_rest_api_archive:
+        type: str
+        description: File name of the REST API archive; derived from the version when not set.
+      domino_rest_api_debug:
+        type: bool
+        default: true
+        description: Print REST API installation output.
+      domino_rest_api_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for the REST API.
+      domino_rest_api_proxy_url:
+        type: str
+        description: Proxied REST API hostname; derived from the first port forward's label and the machine name.

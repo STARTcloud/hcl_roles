@@ -1,0 +1,20 @@
+---
+argument_specs:
+  main:
+    short_description: Configure Java for Domino
+    description:
+      - Configures Java for Domino agents and applications and installs the optional Java helper tools.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      show_help:
+        type: bool
+        default: true
+        description: Whether to display help output during the run.
+      java_helpers_install:
+        type: bool
+        default: false
+        description: Install the Java helper utilities used by later roles.

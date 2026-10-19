@@ -1,0 +1,63 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL Nomad Web
+    description:
+      - Downloads and installs the HCL Nomad server and its optional interim fix, writes nomad-config.yml, the application
+        switcher and the Nomad helper, and registers Nomad with the OIDC provider.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      domino_oidc_debug:
+        type: bool
+        default: false
+        description: Enable the OIDC debug notes.ini settings.
+      nomadweb_default_version:
+        type: str
+        default: 1.0.21
+        description: Release used when nomadweb_version is set to an empty value.
+      nomadweb_version:
+        type: str
+        default: 1.0.21
+        description: Release of the Nomad server to install; the archive name is derived from it.
+      nomadweb_debug:
+        type: bool
+        default: false
+        description: Print Nomad configuration output.
+      nomadweb_app_switcher_enabled:
+        type: bool
+        default: true
+        description: Write the Nomad application switcher configuration.
+      nomad_hotfix_install:
+        type: bool
+        default: false
+        description: Apply a Nomad interim fix after the install.
+      nomad_hotfix_version:
+        type: str
+        default: IF1
+        description: Interim fix designation, for example IF1.
+      domino_nomadweb_port_forwards:
+        type: list
+        elements: dict
+        description: Guest port and proxy URL label HAProxy publishes for Nomad.
+      domino_nomadweb_use_proxy_url:
+        type: bool
+        default: true
+        description: Set NOMAD_WEB_HOST to the proxied Nomad URL instead of the machine hostname.
+      domino_nomadweb_proxy_url:
+        type: str
+        description: Proxied Nomad hostname; derived from the port forward's label and the machine name.
+      nomad_client_config:
+        type: dict
+        description: Registered client settings of Nomad on the OIDC provider.
+      enabled_roles:
+        type: list
+        elements: str
+        description: Names of every role this deployment runs; derived from provision_roles.
+      nomad_app_switcher_enabled_services:
+        type: list
+        elements: str
+        description: Services listed in the Nomad application switcher.

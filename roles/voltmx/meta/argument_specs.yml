@@ -1,0 +1,120 @@
+---
+argument_specs:
+  main:
+    short_description: Install HCL VoltMX Foundry
+    description:
+      - Downloads and installs HCL VoltMX Foundry, builds its WAR files, creates its databases and administrator, and
+        configures its self-signed certificate.
+    author: Mark Gilbert
+    options:
+      run_tasks:
+        type: bool
+        default: true
+        description: Master gate — when false the role loads its vars but runs no tasks.
+      voltmx_dependencies:
+        type: list
+        elements: str
+        description: Packages installed before VoltMX Foundry.
+      voltmx_installation_type:
+        type: str
+        default: Development
+        description: Foundry installation type.
+      voltmx_local_iteration:
+        type: int
+        default: 0
+        description: Installation iteration; 0 for the first install, one more per update.
+      voltmx_installation_dir:
+        type: str
+        description: Foundry installation directory; derived from the service home and the iteration.
+      voltmx_intaller_version:
+        type: str
+        default: 10.0.1.0
+        description: Release of Foundry to install.
+      voltmx_installer_archive:
+        type: str
+        description: File name of the Foundry installer archive; derived from the version when not set.
+      voltmx_installer_bin:
+        type: str
+        description: File name of the Foundry installer binary; derived from the version when not set.
+      voltmx_war_builder_dir:
+        type: str
+        default: /tmp/war-builder
+        description: Directory the WAR files are built in.
+      voltmx_admin_first_name:
+        type: str
+        default: VoltMX
+        description: Foundry administrator first name.
+      voltmx_admin_last_name:
+        type: str
+        default: Admin
+        description: Foundry administrator last name.
+      voltmx_admin_email:
+        type: str
+        description: Foundry administrator email; defaults to the deployment email.
+      voltmx_admin_pass:
+        type: str
+        default: SomeRandomPasswordSecureMe@!
+        description: Foundry administrator password.
+      voltmx_port_forwards:
+        type: list
+        elements: dict
+        description: Guest ports and proxy URL label HAProxy publishes for Foundry.
+      voltmx_db_prefix:
+        type: str
+        default: voltmx
+        description: Database name prefix.
+      voltmx_db_suffix:
+        type: str
+        default: "1"
+        description: Database name suffix.
+      voltmx_rebuild_war_files:
+        type: bool
+        default: true
+        description: Rebuild the WAR files after the install.
+      voltmx_auto_register:
+        type: bool
+        default: false
+        description: Register Foundry automatically.
+      voltmx_auto_reg_url:
+        type: str
+        description: URL Foundry registers under; defaults to the machine's HTTPS address.
+      voltmx_upgrade:
+        type: bool
+        default: false
+        description: Upgrade an existing installation instead of installing fresh.
+      voltmx_db_exist_choice:
+        type: int
+        default: 0
+        description: Installer choice when the databases already exist.
+      voltmx_auto_update_encryption_keys:
+        type: int
+        default: 1
+        description: Update the encryption keys automatically during an upgrade.
+      voltmx_previous_install_dir:
+        type: str
+        default: ""
+        description: Previous installation directory the upgrade takes the encryption keys from.
+      voltmx_selfsigned_cert_ou:
+        type: str
+        default: STARTcloud
+        description: Organizational unit of the self-signed certificate.
+      voltmx_selfsigned_cert_company_name:
+        type: str
+        default: STARTcloud
+        description: Company name of the self-signed certificate.
+      voltmx_selfsigned_cert_city:
+        type: str
+        default: Rantoul
+        description: City of the self-signed certificate.
+      voltmx_selfsigned_cert_state:
+        type: str
+        default: IL
+        description: State of the self-signed certificate.
+      voltmx_selfsigned_cert_country:
+        type: str
+        default: US
+        description: Country of the self-signed certificate.
+      voltmx_use_self_signed:
+        type: bool
+        default: true
+        description: Serve Foundry with the self-signed certificate.
